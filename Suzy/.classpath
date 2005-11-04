@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry sourcepath="/opt/sun-jdk-1.5.0.05/lib/tools.jar" kind="lib" path="/opt/sun-jdk-1.5.0.05/lib/tools.jar">
+		<attributes>
+			<attribute value="file:/home/honk/working/other/api-bot/src-zip/" name="javadoc_location"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="googleapi.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
