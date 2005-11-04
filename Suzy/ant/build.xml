@@ -5,7 +5,7 @@
 		<javadoc
 			access="protected"
 			author="true"
-			classpath="${java.home}/../lib/tools.jar:${java.home}/lib/tools.jar:../googleapi.jar"
+			classpath="${java.home}/../lib/tools.jar:${env.JAVA_HOME}/lib/tools.jar:../googleapi.jar"
 			destdir="../exporting/javadoc"
 			nodeprecated="false"
 			nodeprecatedlist="false"
