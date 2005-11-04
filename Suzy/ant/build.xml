@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="build">
+	<target name="javadoc">
+		<echo>${java.home}</echo>
+		<javadoc
+			access="protected"
+			author="true"
+			classpath="${java.home}/../lib/tools.jar:${java.home}/lib/tools.jar:../googleapi.jar"
+			destdir="../exporting/javadoc"
+			nodeprecated="false"
+			nodeprecatedlist="false"
+			noindex="false"
+			nonavbar="false"
+			notree="false"
+			packagenames="de.berlios.suzy.irc,de.berlios.suzy.parser,de.berlios.suzy"
+			source="1.5"
+			sourcefiles="../src/FactoidPlugin.java,../src/GooglePlugin.java,../src/JoinChannelPlugin.java,../src/ApiPlugin.java,../src/TestPlugin.java,../src/HelpPlugin.java,../src/QuakenetAuthPlugin.java"
+			sourcepath="../src"
+			splitindex="true"
+			use="false"
+			version="true">
+		</javadoc>
+	</target>
+
+	<target name="build">
+		<javac srcdir="../src/"
+			destdir="../bin/"
+			classpath="../src;../googleapi.jar"
+			source="1.5"
+			target="1.5"
+		/>
+	</target>
+
+	<target name="clean">
+		<delete>
+			<fileset dir="../bin" includes="**" />
+		</delete>
+	</target>
+
+	<target name="export" depends="build">
+		<mkdir dir="../exporting/tmp" />
+
+		<copy preservelastmodified="true" todir="../exporting/tmp/">
+			<fileset dir="../">
+				<filename name="googleapi.jar" />
+			</fileset>
+			<fileset dir="../">
+				<filename name="*.conf" />
+			</fileset>
+			<fileset dir="../">
+				<filename name="api.dat" />
+			</fileset>
+			<fileset dir="../">
+				<filename name="start.*" />
+			</fileset>
+		</copy>
+
+
+		<jar destfile="../exporting/tmp/suzy.jar">
+			<fileset dir="../bin">
+				<include name="**" />
+			</fileset>
+			<fileset dir="../src">
+				<include name="**" />
+			</fileset>
+		</jar>
+
+		<zip destfile="../exporting/suzy.zip" basedir="../exporting/tmp/" />
+
+		<delete dir="../exporting/tmp/" />
+	</target>
+</project>

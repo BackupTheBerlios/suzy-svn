@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT factiods (factoid*) >
+<!ELEMENT factoid EMPTY >
+<!ATTLIST factoid id ID #REQUIRED>
