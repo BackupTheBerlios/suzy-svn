@@ -160,8 +160,6 @@ public class LoaderPlugin implements Plugin {
 		        sb.append(actions[i]);
 		        sb.append(" (Not accessible! Remove colon in name)");
 		        continue;
-	        } else {
-	        	System.out.println("accepted: "+actions[i]);
 	        }
             Plugin oldP = pluginList.get(actions[i]);
             if (oldP == null || oldP.getClass().getName().equals(p.getClass().getName())) {
@@ -198,9 +196,7 @@ public class LoaderPlugin implements Plugin {
 		        sb.append(restrictedActions[i]);
 		        sb.append(" (Not accessible! Remove colon in name)");
 		        continue;
-	        } else {
-	        	System.out.println("accepted: "+restrictedActions[i]);
-	        }
+	        } 
             Plugin oldP = restrictedPluginList.get(restrictedActions[i]);
             if (oldP == null || oldP.getClass().getName().equals(p.getClass().getName())) {
             	restrictedPluginList.put(restrictedActions[i], p);
