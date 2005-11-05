@@ -341,7 +341,13 @@ public class LoaderPlugin implements Plugin {
                 	return getParent().loadClass(className);
                 }
  				String currentClassName = className; 
-				URL url = getURL(className, pluginWithoutPackage);
+            	String classLocation = "/" + className.replace('.','/') + ".class";
+                URL url = getClass().getResource(classLocation);
+                
+                if (url == null && pluginWithoutPackage) {
+                	// it could be in the default plugin package
+                	url = getClass().getResource("/" + DEFAULT_PACKAGE.replace('.','/') + classLocation);
+                }
 				
 				if (url == null) {
 					// possibly short hand name?
@@ -357,7 +363,14 @@ public class LoaderPlugin implements Plugin {
 					}
 					className = packageName + simpleClassName.substring(0, 1).toUpperCase() +
 								simpleClassName.substring(1) + "Plugin";
-					url = getURL(className, pluginWithoutPackage);
+	            	classLocation = "/" + className.replace('.','/') + ".class";
+	                url = getClass().getResource(classLocation);
+	                
+	                if (url == null && pluginWithoutPackage) {
+	                	// it could be in the default plugin package
+	                	url = getClass().getResource("/" + DEFAULT_PACKAGE.replace('.','/') + classLocation);
+	                	className = DEFAULT_PACKAGE + "." + className;
+	                }
 				}
 				if (url == null) {
                 	throw new ClassNotFoundException("Cannot find class "
@@ -384,17 +397,6 @@ public class LoaderPlugin implements Plugin {
                 }
             	throw new ClassNotFoundException("Cannot find class "
                     + className + ".");		
-            }
-            
-            private URL getURL(String className, boolean pluginWithoutPackage) {
-            	String classLocation = "/" + className.replace('.','/') + ".class";
-                URL url = getClass().getResource(classLocation);
-                
-                if (url == null && pluginWithoutPackage) {
-                	// it could be in the default plugin package
-                	url = getClass().getResource(DEFAULT_PACKAGE.replace('.','/') + classLocation);
-                }
-                return url;
             }
         };
 
