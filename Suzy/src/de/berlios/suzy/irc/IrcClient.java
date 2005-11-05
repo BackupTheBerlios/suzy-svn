@@ -213,29 +213,54 @@ public class IrcClient implements IrcSender {
         String message = messageContent.length>1?messageContent[1]:"";
         IrcTarget target = getTarget(cmd);
 
-
-
-
-        Plugin unRestrictedPlugin = loaderPlugin.getPluginList().get(command);
-        Plugin restrictedPlugin = loaderPlugin.getRestrictedPluginList().get(command);
-        Plugin plugin;
-
-        if (restrictedPlugin != null) {
+		boolean restricted = false;
+        Plugin plugin = loaderPlugin.getPluginList().get(command);
+        if (plugin == null) {
+        	// restricted?
+        	plugin = loaderPlugin.getRestrictedPluginList().get(command);
+        	if (plugin != null) {
+        		restricted = true;
+        	} else {
+        		// we could be using a namespace
+				int colonIndex;
+		        if ((colonIndex = command.indexOf(':')) != -1) {
+		            String pluginName = command.substring(0, colonIndex);
+		            command = command.substring(colonIndex + 1);
+					plugin = loaderPlugin.getPluginList().get(command);
+			        if (plugin == null) {
+			        	// restricted?
+			        	plugin = loaderPlugin.getRestrictedPluginList().get(command);
+			        	if (plugin != null) {
+			        		restricted = true;
+			        	} else { 
+			        		return; // no handler
+			        	}
+			        }
+		        	String adjustedClassName = pluginName + "plugin";
+		        	String actualClassName = plugin.getClass().getSimpleName().toLowerCase();
+		        	if (!adjustedClassName.equals(actualClassName)) {
+		        		return; // incorrect namespace
+		        	}
+			    } else {
+			    	return; // or maybe there is just no handler
+			    }
+        	}
+        }
+        
+        // command could be still using namespace (case of duplicates)				
+        int colonIndex;
+        if ((colonIndex = command.indexOf(':')) != -1) {
+            command = command.substring(colonIndex + 1);
+		} 
+        
+        if (restricted) {
             if (admins.contains(target.getUser())) {
-                plugin = restrictedPlugin;
             } else {
                 sendMessageTo(target.getUser(), MessageTypes.PRIVMSG, "Sorry, you do not have access to this command.");
                 return;
             }
-        } else {
-            plugin = unRestrictedPlugin;
-        }
-
-
-        if (plugin == null) {   //no handler
-            return;
-        }
-
+        } 
+                
         IrcCommandEvent ircCmdEvent = new IrcCommandEvent(this, target, commandModifier, command, message);
 
         try {

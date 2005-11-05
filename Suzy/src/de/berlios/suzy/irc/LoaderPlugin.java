@@ -1,17 +1,13 @@
 package de.berlios.suzy.irc;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -151,23 +147,81 @@ public class LoaderPlugin implements Plugin {
     }
 
     private String addPlugin(Plugin p) {
-        String[] actions = p.getCommands();
         StringBuilder sb = new StringBuilder();
-        for (String action : actions) {
-            if (sb.length() != 0) {
-                sb.append(", ");
+        String[] actions = p.getCommands();
+        for (int i = 0; i < actions.length; i++) {
+	        if (actions[i].indexOf(':') != -1) {
+				// invalid; reject and move on
+		    	if (sb.length() != 0) {
+		            sb.append(", ");
+		        }
+		        sb.append(actions[i]);
+		        sb.append(" (Not accessible! Remove colon in name)");
+		        continue;
+	        } else {
+	        	System.out.println("accepted: "+actions[i]);
+	        }
+            Plugin oldP = pluginList.get(actions[i]);
+            if (oldP == null || oldP.getClass().getName().equals(p.getClass().getName())) {
+            	pluginList.put(actions[i], p);
+            } else {
+            	String className = p.getClass().getSimpleName();
+            	if (className.endsWith("Plugin")) {
+	            	int index = className.lastIndexOf("Plugin");
+	            	String adjustedClassName = className.substring(0, index).toLowerCase();
+					actions[i] = adjustedClassName + ":" + actions[i];
+					pluginList.put(actions[i], p);
+				} else {
+					if (sb.length() != 0) {
+			            sb.append(", ");
+			        }
+			        sb.append(actions[i]);
+			        sb.append(" (Not accessible! Duplicate exists and class name does not follow standard format)");
+		        	continue;
+				}
             }
-            sb.append(action);
-            pluginList.put(action, p);
+	    	if (sb.length() != 0) {
+	            sb.append(", ");
+	        }
+	        sb.append(actions[i]);
         }
-
+        
         String[] restrictedActions = p.getRestrictedCommands();
-        for (String action : restrictedActions) {
-            if (sb.length() != 0) {
-                sb.append(", ");
+		for (int i = 0; i < restrictedActions.length; i++) {
+	        if (restrictedActions[i].indexOf(':') != -1) {
+				// invalid; reject and move on
+		    	if (sb.length() != 0) {
+		            sb.append(", ");
+		        }
+		        sb.append(restrictedActions[i]);
+		        sb.append(" (Not accessible! Remove colon in name)");
+		        continue;
+	        } else {
+	        	System.out.println("accepted: "+restrictedActions[i]);
+	        }
+            Plugin oldP = restrictedPluginList.get(restrictedActions[i]);
+            if (oldP == null || oldP.getClass().getName().equals(p.getClass().getName())) {
+            	restrictedPluginList.put(restrictedActions[i], p);
+            } else {
+            	String className = p.getClass().getSimpleName();
+            	if (className.endsWith("Plugin")) {
+	            	int index = className.lastIndexOf("Plugin");
+	            	String adjustedClassName = className.substring(0, index).toLowerCase();
+					restrictedActions[i] = adjustedClassName + ":" + restrictedActions[i];
+					restrictedPluginList.put(restrictedActions[i], p);
+				} else {
+					if (sb.length() != 0) {
+			            sb.append(", ");
+			        }
+			        sb.append(restrictedActions[i]);
+			        sb.append(" (Not accessible! Duplicate exists and class name does not follow standard format)");
+		        	continue;
+				}
             }
-            sb.append(action);
-            restrictedPluginList.put(action, p);
+	    	if (sb.length() != 0) {
+	            sb.append(", ");
+	        }
+	        sb.append(restrictedActions[i]);
         }
 
         if (p instanceof PerformOnConnectPlugin) {
