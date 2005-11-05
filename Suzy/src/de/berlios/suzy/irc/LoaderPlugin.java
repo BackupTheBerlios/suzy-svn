@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * This plugin is responsible for loading and unloading other plugins at runtime.
@@ -34,6 +35,7 @@ import java.util.Map;
  * @author honk
  */
 public class LoaderPlugin implements Plugin {
+	public final String DEFAULT_PACKAGE = "de.berlios.suzy.irc.plugin";
     private Map<String, Plugin> pluginList = new HashMap<String, Plugin>();
     private Map<String, Plugin> restrictedPluginList = new HashMap<String, Plugin>();
     private List<PerformOnConnectPlugin> performOnConnectList = new ArrayList<PerformOnConnectPlugin>();
@@ -231,20 +233,40 @@ public class LoaderPlugin implements Plugin {
         return sb.toString();
     }
 
-    private void removePlugin(Plugin p) {
-        String[] actions = p.getCommands();
-        for (String action : actions) {
-            pluginList.remove(action);
+    private String removePlugin(Plugin p) {
+    	StringBuilder sb = new StringBuilder();
+    	String pluginName = p.getClass().getName();
+    	
+    	List<String> toRemove = new ArrayList<String>();
+    	Set<Map.Entry<String,Plugin>> actionSet = pluginList.entrySet();
+    	for (Map.Entry<String,Plugin> action : actionSet) {
+            if (action.getValue().getClass().getName().equals(pluginName)) {
+            	toRemove.add(action.getKey());
+		    	if (sb.length() != 0) {
+		            sb.append(", ");
+		        }
+		        sb.append(action.getKey());
+            }
         }
-
-        String[] restrictedActions = p.getRestrictedCommands();
-        for (String action : restrictedActions) {
-            restrictedPluginList.remove(action);
+        for (String key : toRemove) {
+        	pluginList.remove(key);
         }
-
-        if (p instanceof PerformOnConnectPlugin) {
-            performOnConnectList.remove((PerformOnConnectPlugin)p);
+        
+		toRemove = new ArrayList<String>();
+    	Set<Map.Entry<String,Plugin>> restrictedActionSet = restrictedPluginList.entrySet();
+        for (Map.Entry<String,Plugin> action : restrictedActionSet) {
+            if (action.getValue().getClass().getName().equals(pluginName)) {
+            	toRemove.add(action.getKey());
+		    	if (sb.length() != 0) {
+		            sb.append(", ");
+		        }
+		        sb.append(action.getKey());
+            }
         }
+        for (String key : toRemove) {
+        	restrictedPluginList.remove(key);
+        }
+        return sb.toString();
     }
 
     /**
@@ -277,8 +299,8 @@ public class LoaderPlugin implements Plugin {
     private void removePlugin(IrcCommandEvent ice) {
         try {
             Plugin p = loadPlugin(ice.getMessageContent());
-            removePlugin(p);
-            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Unloaded successfully");
+            String commands = removePlugin(p);
+            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Unloaded successfully: "+commands);
         } catch (Exception e) {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Unloading failed: "+e.getMessage());
             e.printStackTrace();
@@ -322,10 +344,29 @@ public class LoaderPlugin implements Plugin {
                     || (!pluginWithoutPackage && !className.startsWith(pluginPackage))) {
                 	return getParent().loadClass(className);
                 }
-                String classLocation = "/" + className.replace('.','/') + ".class";
+ 				String currentClassName = className; 
+				URL url = getURL(className, pluginWithoutPackage);
 				
-                URL url = getClass().getResource(classLocation);
-                
+				if (url == null) {
+					// possibly short hand name?
+					String simpleClassName;
+					String packageName;
+					if (pluginWithoutPackage) {
+						simpleClassName = className;
+						packageName = "";
+					} else {
+						simpleClassName = className.substring(className.lastIndexOf('.')+1);
+						packageName =  className.substring(0, className.lastIndexOf('.'));
+						
+					}
+					className = packageName + simpleClassName.substring(0, 1).toUpperCase() +
+								simpleClassName.substring(1) + "Plugin";
+					url = getURL(className, pluginWithoutPackage);
+				}
+				if (url == null) {
+                	throw new ClassNotFoundException("Cannot find class "
+                        + currentClassName + ".");					
+				}
                 try {
                     InputStream is = url.openStream();
                     byte[] data = new byte[10240];
@@ -345,8 +386,19 @@ public class LoaderPlugin implements Plugin {
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
                 }
-                throw new ClassNotFoundException("Cannot find class "
-                        + className + ".");
+            	throw new ClassNotFoundException("Cannot find class "
+                    + className + ".");		
+            }
+            
+            private URL getURL(String className, boolean pluginWithoutPackage) {
+            	String classLocation = "/" + className.replace('.','/') + ".class";
+                URL url = getClass().getResource(classLocation);
+                
+                if (url == null && pluginWithoutPackage) {
+                	// it could be in the default plugin package
+                	url = getClass().getResource(DEFAULT_PACKAGE.replace('.','/') + classLocation);
+                }
+                return url;
             }
         };
 
