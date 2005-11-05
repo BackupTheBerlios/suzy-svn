@@ -133,7 +133,7 @@ public class IrcClient implements IrcSender {
 
         if (myNick.equals("*")) {
             String nickInUse = cmd[3].substring(0, cmd[3].indexOf(' '));
-            String newNickName = nickName+Math.round(Math.random()*10);
+            String newNickName = nickName+(int)(Math.random()*10);
             System.out.println("Nickname "+nickInUse+" in use, changing to: "+newNickName);
             send("NICK "+newNickName);
             this.nickName = newNickName;
