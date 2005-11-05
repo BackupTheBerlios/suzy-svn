@@ -316,25 +316,24 @@ public class LoaderPlugin implements Plugin {
         }
     }
 
-
-
-    @SuppressWarnings("unchecked")
-    private Plugin loadPlugin(String className) throws IOException,
+   private Plugin loadPlugin(String className) throws IOException,
             ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, IllegalArgumentException,
             IllegalAccessException, InstantiationException
     {
-    	final String pluginPackage;
-    	final boolean pluginWithoutPackage;
+    	final String initPluginPackage;
+    	final boolean initPluginWithoutPackage;
     	int lastDotIndex = className.lastIndexOf('.');
     	if (lastDotIndex != -1) {
-    		pluginWithoutPackage = false;
-    		pluginPackage = className.substring(0, lastDotIndex);
+    		initPluginWithoutPackage = false;
+    		initPluginPackage = className.substring(0, lastDotIndex);
     	} else {
-    		pluginWithoutPackage = true;
-    		pluginPackage = null;
+    		initPluginWithoutPackage = true;
+    		initPluginPackage = null;
     	}
         ClassLoader cl = new ClassLoader() {
+        	String pluginPackage = initPluginPackage;
+        	boolean pluginWithoutPackage = initPluginWithoutPackage;
             public Class<?> loadClass(String className) throws ClassNotFoundException {
                 if ((pluginWithoutPackage && className.contains(".")) 
                     || (!pluginWithoutPackage && !className.startsWith(pluginPackage))) {
@@ -343,10 +342,14 @@ public class LoaderPlugin implements Plugin {
  				String currentClassName = className; 
             	String classLocation = "/" + className.replace('.','/') + ".class";
                 URL url = getClass().getResource(classLocation);
-                
                 if (url == null && pluginWithoutPackage) {
                 	// it could be in the default plugin package
                 	url = getClass().getResource("/" + DEFAULT_PACKAGE.replace('.','/') + classLocation);
+                	if (url != null) {
+                		className = DEFAULT_PACKAGE + "." + className;
+                		pluginPackage = DEFAULT_PACKAGE;
+                		pluginWithoutPackage = false;
+                	}
                 }
 				
 				if (url == null) {
@@ -370,6 +373,8 @@ public class LoaderPlugin implements Plugin {
 	                	// it could be in the default plugin package
 	                	url = getClass().getResource("/" + DEFAULT_PACKAGE.replace('.','/') + classLocation);
 	                	className = DEFAULT_PACKAGE + "." + className;
+	                	pluginPackage = DEFAULT_PACKAGE;
+	                	pluginWithoutPackage = false;
 	                }
 				}
 				if (url == null) {
@@ -401,16 +406,16 @@ public class LoaderPlugin implements Plugin {
         };
 
 
-        Class<Plugin> c = (Class<Plugin>)cl.loadClass(className);
+        Class<?> c = (Class<?>)cl.loadClass(className);
 
         Plugin plugin;
 
         try {   //try constructor with server first
-            Constructor<Plugin> constructor = c.getConstructor(new Class[] {String.class});
-            plugin = constructor.newInstance(new Object[] {network});
+            Constructor<?> constructor = c.getConstructor(new Class[] {String.class});
+            plugin = (Plugin)constructor.newInstance(new Object[] {network});
         } catch (NoSuchMethodException nme) {   //try constructor without server as argument
-            Constructor<Plugin> constructor = c.getConstructor(new Class[] {});
-            plugin = constructor.newInstance(new Object[] {});
+            Constructor<?> constructor = c.getConstructor(new Class[] {});
+            plugin = (Plugin)constructor.newInstance(new Object[] {});
         }
 
         System.out.println("--- loading plugin: " + className + " with actions: ");
