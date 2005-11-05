@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.berlios.suzy.irc.plugin.LoaderPlugin;
+
 /**
  * This class is an IRC client. It will connect to the specified host and port.
  * The client will try to reconnect if it gets disconnected.
@@ -232,7 +234,7 @@ public class IrcClient implements IrcSender {
 			        	plugin = loaderPlugin.getRestrictedPluginList().get(command);
 			        	if (plugin != null) {
 			        		restricted = true;
-			        	} else { 
+			        	} else {
 			        		return; // no handler
 			        	}
 			        }
@@ -246,21 +248,21 @@ public class IrcClient implements IrcSender {
 			    }
         	}
         }
-        
-        // command could be still using namespace (case of duplicates)				
+
+        // command could be still using namespace (case of duplicates)
         int colonIndex;
         if ((colonIndex = command.indexOf(':')) != -1) {
             command = command.substring(colonIndex + 1);
-		} 
-        
+		}
+
         if (restricted) {
             if (admins.contains(target.getUser())) {
             } else {
                 sendMessageTo(target.getUser(), MessageTypes.PRIVMSG, "Sorry, you do not have access to this command.");
                 return;
             }
-        } 
-                
+        }
+
         IrcCommandEvent ircCmdEvent = new IrcCommandEvent(this, target, commandModifier, command, message);
 
         try {

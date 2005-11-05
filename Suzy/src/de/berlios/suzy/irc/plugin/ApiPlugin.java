@@ -1,3 +1,5 @@
+package de.berlios.suzy.irc.plugin;
+
 
 import java.text.DecimalFormat;
 import java.util.List;

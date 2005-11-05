@@ -1,3 +1,5 @@
+package de.berlios.suzy.irc.plugin;
+
 
 
 import de.berlios.suzy.irc.IrcCommandEvent;

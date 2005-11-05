@@ -1,4 +1,4 @@
-package de.berlios.suzy.irc;
+package de.berlios.suzy.irc.plugin;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import de.berlios.suzy.irc.IrcCommandEvent;
+import de.berlios.suzy.irc.MessageTypes;
+import de.berlios.suzy.irc.PerformOnConnectPlugin;
+import de.berlios.suzy.irc.Plugin;
 
 /**
  * This plugin is responsible for loading and unloading other plugins at runtime.
@@ -185,7 +190,7 @@ public class LoaderPlugin implements Plugin {
 	        }
 	        sb.append(actions[i]);
         }
-        
+
         String[] restrictedActions = p.getRestrictedCommands();
 		for (int i = 0; i < restrictedActions.length; i++) {
 	        if (restrictedActions[i].indexOf(':') != -1) {
@@ -196,7 +201,7 @@ public class LoaderPlugin implements Plugin {
 		        sb.append(restrictedActions[i]);
 		        sb.append(" (Not accessible! Remove colon in name)");
 		        continue;
-	        } 
+	        }
             Plugin oldP = restrictedPluginList.get(restrictedActions[i]);
             if (oldP == null || oldP.getClass().getName().equals(p.getClass().getName())) {
             	restrictedPluginList.put(restrictedActions[i], p);
@@ -232,7 +237,7 @@ public class LoaderPlugin implements Plugin {
     private String removePlugin(Plugin p) {
     	StringBuilder sb = new StringBuilder();
     	String pluginName = p.getClass().getName();
-    	
+
     	List<String> toRemove = new ArrayList<String>();
     	Set<Map.Entry<String,Plugin>> actionSet = pluginList.entrySet();
     	for (Map.Entry<String,Plugin> action : actionSet) {
@@ -247,7 +252,7 @@ public class LoaderPlugin implements Plugin {
         for (String key : toRemove) {
         	pluginList.remove(key);
         }
-        
+
 		toRemove = new ArrayList<String>();
     	Set<Map.Entry<String,Plugin>> restrictedActionSet = restrictedPluginList.entrySet();
         for (Map.Entry<String,Plugin> action : restrictedActionSet) {
@@ -335,11 +340,11 @@ public class LoaderPlugin implements Plugin {
         	String pluginPackage = initPluginPackage;
         	boolean pluginWithoutPackage = initPluginWithoutPackage;
             public Class<?> loadClass(String className) throws ClassNotFoundException {
-                if ((pluginWithoutPackage && className.contains(".")) 
+                if ((pluginWithoutPackage && className.contains("."))
                     || (!pluginWithoutPackage && !className.startsWith(pluginPackage))) {
                 	return getParent().loadClass(className);
                 }
- 				String currentClassName = className; 
+ 				String currentClassName = className;
             	String classLocation = "/" + className.replace('.','/') + ".class";
                 URL url = getClass().getResource(classLocation);
                 if (url == null && pluginWithoutPackage) {
@@ -351,7 +356,7 @@ public class LoaderPlugin implements Plugin {
                 		pluginWithoutPackage = false;
                 	}
                 }
-				
+
 				if (url == null) {
 					// possibly short hand name?
 					String simpleClassName;
@@ -362,13 +367,13 @@ public class LoaderPlugin implements Plugin {
 					} else {
 						simpleClassName = className.substring(className.lastIndexOf('.')+1);
 						packageName =  className.substring(0, className.lastIndexOf('.'));
-						
+
 					}
 					className = packageName + simpleClassName.substring(0, 1).toUpperCase() +
 								simpleClassName.substring(1) + "Plugin";
 	            	classLocation = "/" + className.replace('.','/') + ".class";
 	                url = getClass().getResource(classLocation);
-	                
+
 	                if (url == null && pluginWithoutPackage) {
 	                	// it could be in the default plugin package
 	                	url = getClass().getResource("/" + DEFAULT_PACKAGE.replace('.','/') + classLocation);
@@ -379,7 +384,7 @@ public class LoaderPlugin implements Plugin {
 				}
 				if (url == null) {
                 	throw new ClassNotFoundException("Cannot find class "
-                        + currentClassName + ".");					
+                        + currentClassName + ".");
 				}
                 try {
                     InputStream is = url.openStream();
@@ -401,7 +406,7 @@ public class LoaderPlugin implements Plugin {
                     ioe.printStackTrace();
                 }
             	throw new ClassNotFoundException("Cannot find class "
-                    + className + ".");		
+                    + className + ".");
             }
         };
 

@@ -1,3 +1,5 @@
+package de.berlios.suzy.irc.plugin;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashSet;
