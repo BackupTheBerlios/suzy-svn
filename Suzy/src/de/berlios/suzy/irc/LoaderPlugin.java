@@ -253,53 +253,44 @@ public class LoaderPlugin implements Plugin {
             InvocationTargetException, IllegalArgumentException,
             IllegalAccessException, InstantiationException
     {
-        final URL[] urls = {
-                new File("plugins/").toURL(),
-                getClass().getResource("/")
-        };
-
-        URLClassLoader cl = new URLClassLoader(urls) {
+    	final String pluginPackage;
+    	final boolean pluginWithoutPackage;
+    	int lastDotIndex = className.lastIndexOf('.');
+    	if (lastDotIndex != -1) {
+    		pluginWithoutPackage = false;
+    		pluginPackage = className.substring(0, lastDotIndex);
+    	} else {
+    		pluginWithoutPackage = true;
+    		pluginPackage = null;
+    	}
+        ClassLoader cl = new ClassLoader() {
             public Class<?> loadClass(String className) throws ClassNotFoundException {
-                if (className.contains(".")) {
-                    return new URLClassLoader(urls).loadClass(className);
+                if ((pluginWithoutPackage && className.contains(".")) 
+                    || (!pluginWithoutPackage && !className.startsWith(pluginPackage))) {
+                	return getParent().loadClass(className);
                 }
-
-                URL[] urls = {
-                        getClass().getResource("/" + className + ".class"),
-                        null
-                };
-
+                String classLocation = "/" + className.replace('.','/') + ".class";
+				
+                URL url = getClass().getResource(classLocation);
+                
                 try {
-                    urls[urls.length-1] = new File("plugins/" + className + ".class").toURL();
-                } catch (MalformedURLException e1){
-                    e1.printStackTrace();
-                }
+                    InputStream is = url.openStream();
+                    byte[] data = new byte[10240];
 
-                for (URL url : urls) {
-                    try {
-                        if (url == null) {
-                            continue;
-                        }
-                        InputStream is = url.openStream();
-                        byte[] data = new byte[10240];
-
-                        int length;
-                        int total = 0;
-                        while ((length = is.read(data, total, data.length-total)) != -1) {
-                            total += length;
-                            byte[] tmp = new byte[data.length*2];
-                            System.arraycopy(data, 0, tmp, 0, data.length);
-                            data = tmp;
-                        }
-
-                        Class<?> c = defineClass(className, data, 0, total);
-
-                        return c;
-                    } catch (FileNotFoundException e) {
-                        //expected exception
-                    } catch (IOException ioe) {
-                        ioe.printStackTrace();
+                    int length;
+                    int total = 0;
+                    while ((length = is.read(data, total, data.length-total)) != -1) {
+                        total += length;
+                        byte[] tmp = new byte[data.length*2];
+                        System.arraycopy(data, 0, tmp, 0, data.length);
+                        data = tmp;
                     }
+
+                    Class<?> c = defineClass(className, data, 0, total);
+
+                    return c;
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
                 }
                 throw new ClassNotFoundException("Cannot find class "
                         + className + ".");
@@ -308,6 +299,7 @@ public class LoaderPlugin implements Plugin {
 
 
         Class<Plugin> c = (Class<Plugin>)cl.loadClass(className);
+
         Plugin plugin;
 
         try {   //try constructor with server first
