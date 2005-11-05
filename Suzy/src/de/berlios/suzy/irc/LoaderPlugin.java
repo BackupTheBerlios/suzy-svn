@@ -246,7 +246,6 @@ public class LoaderPlugin implements Plugin {
 
 
 
-    //TODO rewrite
     @SuppressWarnings("unchecked")
     private Plugin loadPlugin(String className) throws IOException,
             ClassNotFoundException, NoSuchMethodException,
