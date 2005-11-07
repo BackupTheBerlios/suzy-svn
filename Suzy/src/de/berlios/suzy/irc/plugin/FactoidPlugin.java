@@ -198,7 +198,7 @@ public class FactoidPlugin implements Plugin {
      	if (name != null) {
      	 	Element e = doc.getElementById(name);
 	 		if (e != null) {
-	 			StringBuffer message = new StringBuffer();
+	 			StringBuilder message = new StringBuilder();
 	 			message.append("Factoid details (");
 	 			message.append(name);
 	 			message.append("): ");
@@ -224,7 +224,7 @@ public class FactoidPlugin implements Plugin {
 
     private void executeList(IrcCommandEvent ice) {
 		 NodeList list = doc.getElementsByTagName("factoid");
-		 StringBuffer buffer = new StringBuffer("Available factoids: ");
+		 StringBuilder buffer = new StringBuilder("Available factoids: ");
 		 for (int i = 0; i < list.getLength(); i++) {
 		 	Node factoid = list.item(i);
 		 	buffer.append(factoid.getAttributes().getNamedItem("id").getTextContent());
