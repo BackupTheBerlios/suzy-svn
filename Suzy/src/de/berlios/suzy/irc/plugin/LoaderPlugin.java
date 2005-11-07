@@ -57,7 +57,6 @@ public class LoaderPlugin implements Plugin {
     public LoaderPlugin(String network) {
         this.network = network;
         addPlugin(this);
-
         loadPluginList("plugins.conf");
         loadPluginList("plugins_"+network+".conf");
     }
@@ -83,6 +82,8 @@ public class LoaderPlugin implements Plugin {
 
         } catch(IOException ioe) {
             ioe.printStackTrace();
+        } catch(Throwable t) {
+        	t.printStackTrace();
         }
     }
 
@@ -306,9 +307,9 @@ public class LoaderPlugin implements Plugin {
             Plugin p = loadPlugin(ice.getMessageContent());
             String commands = removePlugin(p);
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Unloaded successfully: "+commands);
-        } catch (Exception e) {
-            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Unloading failed: "+e.getMessage());
-            e.printStackTrace();
+        } catch (Throwable t) {
+            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Unloading failed: "+t.getMessage());
+           t.printStackTrace();
         }
 
     }
