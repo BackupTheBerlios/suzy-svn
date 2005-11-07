@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 import de.berlios.suzy.irc.IrcCommandEvent;
 import de.berlios.suzy.irc.MessageTypes;
@@ -102,7 +103,8 @@ public class LoaderPlugin implements Plugin {
         return new String[] {
                 "load",
                 "unload",
-                "allcommands"
+                "allcommands",
+                "admincommands"
         };
     }
 
@@ -116,6 +118,8 @@ public class LoaderPlugin implements Plugin {
             removePlugin(ice);
         } else if (ice.getCommand().equals("commands")) {
             showUnrestrictedCommands(ice);
+        } else if (ice.getCommand().equals("admincommands")) {
+            showRestrictedCommands(ice);
         } else if (ice.getCommand().equals("allcommands")) {
             showAllCommands(ice);
         }
@@ -123,34 +127,34 @@ public class LoaderPlugin implements Plugin {
 
 
     private void showUnrestrictedCommands(IrcCommandEvent ice) {
-        StringBuilder unrestrictedCommands = new StringBuilder();
-        for (String s: pluginList.keySet()) {
-            if (unrestrictedCommands.length() != 0) {
+        StringBuilder unrestrictedCommands = new StringBuilder("Available commands: ");
+        for (Iterator<String> it = pluginList.keySet().iterator(); it.hasNext();) {
+        	String command = it.next();
+            unrestrictedCommands.append(command);
+            if (it.hasNext()) {
                 unrestrictedCommands.append(", ");
             }
-            unrestrictedCommands.append(s);
+            
         }
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, unrestrictedCommands.toString());
     }
 
-    private void showAllCommands(IrcCommandEvent ice) {
-        StringBuilder unrestrictedCommands = new StringBuilder();
-        for (String s: pluginList.keySet()) {
-            if (unrestrictedCommands.length() != 0) {
-                unrestrictedCommands.append(", ");
-            }
-            unrestrictedCommands.append(s);
-        }
-        ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, unrestrictedCommands.toString());
-
-        StringBuilder restrictedCommands = new StringBuilder();
-        for (String s: restrictedPluginList.keySet()) {
-            if (restrictedCommands.length() != 0) {
+    private void showRestrictedCommands(IrcCommandEvent ice) {
+        StringBuilder restrictedCommands = new StringBuilder("Admin commands: ");
+        for (Iterator<String> it = restrictedPluginList.keySet().iterator(); it.hasNext();) {
+        	String command = it.next();
+            restrictedCommands.append(command);
+            if (it.hasNext()) {
                 restrictedCommands.append(", ");
             }
-            restrictedCommands.append(s);
+            
         }
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, restrictedCommands.toString());
+    }
+
+    private void showAllCommands(IrcCommandEvent ice) {
+        showUnrestrictedCommands(ice);
+        showRestrictedCommands(ice);
     }
 
     private String addPlugin(Plugin p) {
