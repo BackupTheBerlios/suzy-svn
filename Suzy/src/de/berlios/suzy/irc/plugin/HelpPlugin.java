@@ -36,10 +36,10 @@ public class HelpPlugin implements Plugin {
      */
     public String[] getCommands() {
         return new String[] {
-                "help",
-                "ask",
-                "tutorial",
-                "download"
+                "help"
+                //"ask",
+                //"tutorial",
+                //"download"
         };
     }
 
