@@ -22,9 +22,6 @@ public class Suzy {
      * @param args command line parameters, unused for now
      */
     public static void main(String[] args) {
-        RequestHandler.getInstance();   //Initialise
-
-
         try {
             Scanner configScanner = new Scanner(new File("servers.conf"));
 

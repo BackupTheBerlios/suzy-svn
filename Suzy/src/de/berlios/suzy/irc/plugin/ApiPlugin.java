@@ -37,6 +37,14 @@ public class ApiPlugin implements Plugin {
     };
     private LastRequest lastRequest = LastRequest.NONE;
 
+
+    /**
+     * Causes the underlying RequestHandler to load an instance of the api data.
+     */
+    public ApiPlugin() {
+        RequestHandler.getInstance();   //Initialise
+    }
+
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#getCommands()
      */
@@ -66,6 +74,7 @@ public class ApiPlugin implements Plugin {
             stats(ice);
             return;
         } else if (ice.getCommand().equals("apireload")) {
+            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Reloading api.");
             RequestHandler.getInstance().reload();
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "The api was reloaded.");
             return;
