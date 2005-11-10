@@ -7,7 +7,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -47,6 +50,11 @@ public class IrcClient implements IrcSender {
     private LoaderPlugin loaderPlugin;
     private ConnectThread connectThread;
 
+    private SendThread sendThread;
+    private static int SEND_BUFFER = 1024;
+    //private Queue<String> sendQueue = new LinkedList<String>();
+    private Set<String> sendQueue = Collections.synchronizedSet(new LinkedHashSet<String>());
+
     private Set<String> admins = new TreeSet<String>();
 
 
@@ -74,14 +82,17 @@ public class IrcClient implements IrcSender {
         loaderPlugin = new LoaderPlugin(network);
 
         connectThread = new ConnectThread();
+        sendThread = new SendThread();
         connect();
 
         new Thread(connectThread).start();
+        new Thread(sendThread).start();
     }
 
     private void connect() {
         try {
             admins.clear();
+            sendQueue.clear();
 
             sock = new Socket(server, port);
             sock.setKeepAlive(true);
@@ -186,19 +197,11 @@ public class IrcClient implements IrcSender {
      * @param text text to send
      */
     public void send(String text) {
-        if (pw == null) {
-            System.err.println("Trying to send without being connected.");
-            return;
-        }
-
-        //TODO throttle
-        System.out.println("--> "+text);
-
+        System.out.println("- > "+text);
         text = text.substring(0, Math.min(511, text.length()));
         text = text+"\n";
 
-        pw.write(text);
-        pw.flush();
+        sendQueue.add(text);
     }
 
 
@@ -292,8 +295,10 @@ public class IrcClient implements IrcSender {
     }
 
     private void disconnect() {
-        send("QUIT");
-        pw.flush();
+        if (pw != null) {   //bypass spam protection, we're quitting anyway
+            pw.write("QUIT\n");
+            pw.flush();
+        }
 
         try {
             sock.close();
@@ -327,6 +332,9 @@ public class IrcClient implements IrcSender {
             actionMap.put("PONG", new IrcAction() {
                 public void run(String[] cmd) {
                     connectThread.pongReceived();
+                    if (cmd[3].trim().equals(":floodcheck")) {
+                        sendThread.pongReceived();
+                    }
                 }
             });
             actionMap.put("376", new IrcAction() {
@@ -477,6 +485,58 @@ public class IrcClient implements IrcSender {
             }
         }
 
+    }
+
+    private class SendThread implements Runnable {
+        private int bytesSent;
+        private final String testCommand = "PING :floodcheck\n";
+        private boolean waitForTestCommand = false;
+
+        public void run() {
+            while(true) {
+                if (pw == null) {
+                    System.err.println("Trying to send without being connected.");
+                } else if (!waitForTestCommand) {  //skip if waiting for permission to send more
+                    Iterator<String> it = sendQueue.iterator();
+
+                    if (it.hasNext()) {
+                        String out = it.next();
+                        if (out.length() + bytesSent + testCommand.length() < SEND_BUFFER) {
+                            this.send(out);
+                            sendQueue.remove(out);
+                        } else {
+                            waitForTestCommand = true;
+                            this.send(testCommand);
+                        }
+                    }
+
+                }
+
+                try {
+                    Thread.sleep(50);
+                    cleanSendQueue();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public void pongReceived() {
+            System.out.println("--- Pong received - starting to spam some more");
+            bytesSent = 0;
+            waitForTestCommand = false;
+        }
+
+        private void cleanSendQueue() {
+
+        }
+
+        private void send(String text) {
+            bytesSent += text.length();
+            System.out.print("--> "+ text);
+            pw.write(text);
+            pw.flush();
+        }
     }
 
     private void throttleReconnect() {
