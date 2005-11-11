@@ -50,11 +50,11 @@ public class FactoidPlugin implements Plugin {
     private String [] commands;
     private String [] restrictedCommands;
     private Map<String, String> aliasMap = new HashMap<String, String>();
-    
+
 	public FactoidPlugin () throws Exception {
         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
                 "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
-		
+
 		DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
 		try {
 			db = dbf.newDocumentBuilder();
@@ -65,7 +65,7 @@ public class FactoidPlugin implements Plugin {
 		if (doc == null) {
 			throw new Exception("Error while attempting to parse XML.");
 		}
-		
+
 		restrictedCommands = new String[] {
 					                "add",
 					                "delete",
@@ -76,8 +76,7 @@ public class FactoidPlugin implements Plugin {
 		                "see",
 		                "list",
 		                "tell",
-		                "details",
-		                "help"
+		                "details"
 		        		};
 
 		try {
@@ -94,7 +93,7 @@ public class FactoidPlugin implements Plugin {
 		 } catch (Exception e) {
 		 	throw new Exception("Error while trying to initialize aliases", e);
 		 }
-		 
+
 		 Set<String> aliasSet = aliasMap.keySet();
 		 commands = new String[initCommands.length + aliasSet.size()];
 		 int i = 0;
@@ -132,8 +131,6 @@ public class FactoidPlugin implements Plugin {
     		executeReplace(ice);
     	} else if (command == "alias") {
     		executeAlias(ice);
-    	} else if (command == "help") {
-    		// The frameork should be upaded to support this properly.
     	} else {
 			findAlias(ice, command);
     	}
@@ -144,19 +141,15 @@ public class FactoidPlugin implements Plugin {
     								MessageTypes.PRIVMSG, message);
     }
 
-    private void sendPrivateMessage(IrcCommandEvent ice, String message) {
-    	ice.getSource().sendMessageTo(ice.getTarget().getUser(),
-    								MessageTypes.PRIVMSG, message);
-    }
-	
-	/* +see factoid */
+
+    /* +see factoid */
     private void executeSee(IrcCommandEvent ice) {
 		String name = getFirst(ice);
 		executeSee(ice, name);
     }
 	private void executeSee(IrcCommandEvent ice, String name) {
 		if (name != null) {
-			name = name.toLowerCase(); 		
+			name = name.toLowerCase();
 	 		String factoid = getFactoid(name);
 	 		if (factoid != null) {
 	 			sendMessage(ice, name+" is: "+factoid);
@@ -167,7 +160,7 @@ public class FactoidPlugin implements Plugin {
 	 		sendMessage(ice, "Please specify a factoid.");
 	 	}
 	}
-	
+
 	/* +tell nickname: factoid */
     private void executeTell(IrcCommandEvent ice) {
      	String nickname = getFirst(ice);
@@ -180,7 +173,7 @@ public class FactoidPlugin implements Plugin {
 			String factoid = getFactoid(name);
 	 		if (factoid != null) {
 	 			if (nickname == null) {
-	 				sendMessage(ice, "Please specify a nickname or use the see command.");	
+	 				sendMessage(ice, "Please specify a nickname or use the see command.");
 	 			} else {
 		 			sendMessage(ice, nickname+", "+name+" is: "+factoid);
 	 			}
@@ -287,7 +280,7 @@ public class FactoidPlugin implements Plugin {
 		String name = getFirst(ice);
 		if (name == null) {
 			sendMessage(ice, "Please specify a factoid name.");
-			return;			
+			return;
 		}
 		name = name.toLowerCase();
 		Element e = doc.getElementById(name);
@@ -305,13 +298,13 @@ public class FactoidPlugin implements Plugin {
 		updateXml(ice);
 		sendMessage(ice, "Factoid '"+name+"' successfully replaced.");
     }
-    
+
     /* +alias factoid: alias */
     public void executeAlias(IrcCommandEvent ice)  {
 		String name = getFirst(ice);
 		if (name == null) {
 			sendMessage(ice, "Please specify a factoid name.");
-			return;			
+			return;
 		}
 		name = name.toLowerCase();
 		Element e = doc.getElementById(name);
@@ -326,7 +319,7 @@ public class FactoidPlugin implements Plugin {
 		}
 		if (alias.indexOf(' ') != -1) {
     		sendMessage(ice, "An alias can consist of one word only.");
-    		return;			
+    		return;
 		}
 		for (String command : commands) {
 			if (command.equals(alias)) {
@@ -338,7 +331,7 @@ public class FactoidPlugin implements Plugin {
 		updateXml(ice);
 		sendMessage(ice, "Factoid '"+name+"' can now be accessed using the alias '"+alias+"' after reloading the plugin. ");
     }
-    
+
 	public void findAlias(IrcCommandEvent ice, String command) {
 		    String commandForAlias = aliasMap.get(command);
     		if (commandForAlias != null) {
@@ -362,7 +355,7 @@ public class FactoidPlugin implements Plugin {
 	 		}
 	 	} catch (Exception e) {
 	 		return null;
-	 	} 
+	 	}
 	}
     private void updateXml(IrcCommandEvent ice) {
 	   try
@@ -375,7 +368,7 @@ public class FactoidPlugin implements Plugin {
 	   		sendMessage(ice, "Failed to update the XML document.");
 	   }
 	}
-	
+
 	private String getFirst(IrcCommandEvent ice) {
 		if (ice.getMessageContent().length() == 0) {
 			return null;
