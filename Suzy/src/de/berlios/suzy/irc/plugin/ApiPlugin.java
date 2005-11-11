@@ -2,7 +2,7 @@ package de.berlios.suzy.irc.plugin;
 
 
 import java.text.DecimalFormat;
-import java.util.List;
+import java.util.Set;
 
 import de.berlios.suzy.irc.IrcCommandEvent;
 import de.berlios.suzy.irc.MessageTypes;
@@ -128,36 +128,36 @@ public class ApiPlugin implements Plugin {
     }
 
     private void api(IrcCommandEvent ice) {
-        List<String> matches = RequestHandler.getInstance().parseAll(ice.getMessageContent());
+        Set<String> matches = RequestHandler.getInstance().parseAll(ice.getMessageContent());
         lastRequest = LastRequest.ALL;
         reply(ice, matches);
     }
 
     private void classes(IrcCommandEvent ice) {
-        List<String> matches = RequestHandler.getInstance().parseClasses(ice.getMessageContent());
+        Set<String> matches = RequestHandler.getInstance().parseClasses(ice.getMessageContent());
         lastRequest = LastRequest.CLASSES;
         reply(ice, matches);
     }
 
     private void methods(IrcCommandEvent ice) {
-        List<String> matches = RequestHandler.getInstance().parseMethods(ice.getMessageContent());
+        Set<String> matches = RequestHandler.getInstance().parseMethods(ice.getMessageContent());
         lastRequest = LastRequest.METHODS;
         reply(ice, matches);
     }
 
 
-    private void reply(IrcCommandEvent ice, List<String> matches) {
+    private void reply(IrcCommandEvent ice, Set<String> matches) {
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, format(matches));
     }
 
-    private String format(List<String> matches) {
+    private String format(Set<String> matches) {
         if (matches.size() == 0) {
             return "No matches found.";
         }
 
         StringBuilder sb = new StringBuilder();
-        for (int i=0;i<matches.size(); i++) {
-            if (matches.get(i).length() + sb.length() > 400) {
+        for (String match: matches) {
+            if (match.length() + sb.length() > 300) {
                 sb.append(" (total: ");
                 sb.append(matches.size());
                 sb.append(")");
@@ -166,7 +166,7 @@ public class ApiPlugin implements Plugin {
             if (sb.length() != 0) {
                 sb.append(" | ");
             }
-            sb.append(matches.get(i));
+            sb.append(match);
         }
 
         return sb.toString();

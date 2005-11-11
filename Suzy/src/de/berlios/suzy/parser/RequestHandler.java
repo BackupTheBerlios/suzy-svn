@@ -1,7 +1,8 @@
 package de.berlios.suzy.parser;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * RequestHandler is responsible for searching inside a parsed api tree.
@@ -96,10 +97,10 @@ public class RequestHandler {
      * @param pattern pattern to be matched
      * @return a List containing all matches
      */
-    public List<String> parseClasses(String pattern) {
+    public Set<String> parseClasses(String pattern) {
         String[] splitPattern = processPattern(pattern);
 
-        List<String> classes = findClasses(splitPattern);
+        Set<String> classes = findClasses(splitPattern);
 
         return classes;
     }
@@ -115,10 +116,10 @@ public class RequestHandler {
      * @param pattern pattern to be matched
      * @return a List containing all matches
      */
-    public List<String> parseMethods(String pattern) {
+    public Set<String> parseMethods(String pattern) {
         String[] splitPattern = processPattern(pattern);
 
-        List<String> methods = findMethods(splitPattern);
+        Set<String> methods = findMethods(splitPattern);
 
         return methods;
     }
@@ -134,20 +135,20 @@ public class RequestHandler {
      * @param pattern pattern to be matched
      * @return a List containing all matches
      */
-    public List<String> parseAll(String pattern) {
+    public Set<String> parseAll(String pattern) {
         String[] splitPattern = processPattern(pattern);
 
-        List<String> results = findClasses(splitPattern);
+        Set<String> results = findClasses(splitPattern);
         results = findMethods(splitPattern, results);
 
         return results;
     }
 
-    private List<String> findMethods(String[] splitPattern) {
-        return findMethods(splitPattern, new ArrayList<String>());
+    private Set<String> findMethods(String[] splitPattern) {
+        return findMethods(splitPattern, new HashSet<String>());
     }
 
-    private List<String> findMethods(String[] splitPattern, List<String> results) {
+    private Set<String> findMethods(String[] splitPattern, Set<String> results) {
         for (ClassInfo ci: classes) {
             for (MethodInfo mi: ci.getMetods()) {
                 if (!mi.getQualifiedName().endsWith(splitPattern[splitPattern.length-1])) {
@@ -192,11 +193,11 @@ public class RequestHandler {
 
 
 
-    private List<String> findClasses(String[] splitPattern) {
-        return findClasses(splitPattern, new ArrayList<String>());
+    private Set<String> findClasses(String[] splitPattern) {
+        return findClasses(splitPattern, new HashSet<String>());
     }
 
-    private List<String> findClasses(String[] splitPattern, List<String> results) {
+    private Set<String> findClasses(String[] splitPattern, Set<String> results) {
         for (ClassInfo ci: classes) {
             if (!ci.getQualifiedName().endsWith(splitPattern[splitPattern.length-1])) {
                  continue;
