@@ -5,8 +5,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 
+import de.berlios.suzy.irc.IrcClient;
 import de.berlios.suzy.irc.IrcCommandEvent;
-import de.berlios.suzy.irc.IrcSender;
 import de.berlios.suzy.irc.MessageTypes;
 import de.berlios.suzy.irc.PerformOnConnectPlugin;
 
@@ -47,11 +47,11 @@ public class QuakenetAuthPlugin implements PerformOnConnectPlugin {
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.PerformOnConnectPlugin#perform(de.berlios.suzy.irc.IrcSender)
      */
-    public void perform(IrcSender ircSender) {
+    public void perform(IrcClient ircSender) {
         auth(ircSender);
     }
 
-    private void auth(IrcSender ircSender) {
+    private void auth(IrcClient ircSender) {
         Scanner sc;
         try {
             sc = new Scanner(new File("qauth.conf"));
@@ -76,5 +76,23 @@ public class QuakenetAuthPlugin implements PerformOnConnectPlugin {
 
     }
 
+    /* (non-Javadoc)
+     * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+     */
+    public String[] getHelp(IrcCommandEvent ice) {
+        String message = ice.getMessageContent();
+
+        if (message.equals("quakenetauthplugin")) {
+            return new String[] {
+                    "Auths the bot with the account given in the config (on perform and on request).",
+            };
+        } else if (message.equals("auth")){
+            return new String[] {
+                    "Auths the bot again.",
+            };
+        }
+
+        return null;
+    }
 
 }

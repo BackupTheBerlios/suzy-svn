@@ -23,6 +23,7 @@ public class TestPlugin implements Plugin {
      */
     public String[] getCommands() {
         return new String[] {
+                "add",
                 "test"
         };
     }
@@ -44,6 +45,13 @@ public class TestPlugin implements Plugin {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "moo!");
         } else if (ice.getCommand().equals("admintest")) {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "fierce moo!");
+        } else if (ice.getCommand().equals("add")) {
+            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "additional moo!");
         }
+    }
+
+    public String[] getHelp(IrcCommandEvent ice) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

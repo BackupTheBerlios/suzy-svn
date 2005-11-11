@@ -34,4 +34,16 @@ public interface Plugin {
      * @param ice the Event that occured
      */
     public void handleEvent(IrcCommandEvent ice);
+    /**
+     * Returns help for the specified command. Each line in the array will
+     * be sent to the user requesting help.<br>
+     * The IrcCommandEvent will contain "help" as command and the command
+     * that the user requested help for as message. The command will either
+     * be a command that this plugin registered or the classes simple name
+     * in lowercase.
+     *
+     * @param ice event causing this request
+     * @return an array containing help for the specified command
+     */
+    public String[] getHelp(IrcCommandEvent ice);
 }

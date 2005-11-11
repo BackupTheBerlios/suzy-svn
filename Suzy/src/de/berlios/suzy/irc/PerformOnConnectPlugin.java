@@ -14,5 +14,5 @@ public interface PerformOnConnectPlugin extends Plugin {
      * @param ircSender a sender that is capable of sending text to server
      * that the connection was made to.
      */
-    public void perform(IrcSender ircSender);
+    public void perform(IrcClient ircSender);
 }

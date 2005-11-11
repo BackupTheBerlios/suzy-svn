@@ -392,4 +392,9 @@ public class FactoidPlugin implements Plugin {
 			return ice.getMessageContent().substring(index + 1).trim();
 		}
 	}
+
+    public String[] getHelp(IrcCommandEvent ice) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

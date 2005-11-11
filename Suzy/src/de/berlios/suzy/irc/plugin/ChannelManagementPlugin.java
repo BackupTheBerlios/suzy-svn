@@ -90,7 +90,7 @@ public class ChannelManagementPlugin implements Plugin {
 			}
 		}
 	}
-	
+
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#getRestrictedCommands()
      */
@@ -102,11 +102,19 @@ public class ChannelManagementPlugin implements Plugin {
 		}
 		return cmds;
 	}
-	
+
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#getCommands()
      */
 	public String[] getCommands() {
 		return new String[0];
 	}
+
+    /* (non-Javadoc)
+     * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+     */
+    public String[] getHelp(IrcCommandEvent ice) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

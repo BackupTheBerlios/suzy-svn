@@ -135,7 +135,7 @@ public class LoaderPlugin implements Plugin {
             if (it.hasNext()) {
                 unrestrictedCommands.append(", ");
             }
-            
+
         }
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, unrestrictedCommands.toString());
     }
@@ -148,7 +148,7 @@ public class LoaderPlugin implements Plugin {
             if (it.hasNext()) {
                 restrictedCommands.append(", ");
             }
-            
+
         }
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, restrictedCommands.toString());
     }
@@ -436,4 +436,39 @@ public class LoaderPlugin implements Plugin {
 
         return plugin;
     }
+
+   /* (non-Javadoc)
+    * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+    */
+   public String[] getHelp(IrcCommandEvent ice) {
+       String message = ice.getMessageContent();
+
+       if (message.equals("loaderplugin")) {
+           return new String[] {
+                   "Loads and unloads plugins at runtime.",
+           };
+       } else if (message.equals("load")){
+           return new String[] {
+                   "Loads the specified plugin. Short names (api instead of ApiPlugin possible).",
+           };
+       } else if (message.equals("unload")){
+           return new String[] {
+                   "Unloads the specified plugin. Short names (api instead of ApiPlugin possible).",
+           };
+       } else if (message.equals("commands")){
+           return new String[] {
+                   "Lists all non-admin commands currently registered.",
+           };
+       } else if (message.equals("allcommands")){
+           return new String[] {
+                   "Lists all commands currently registered.",
+           };
+       } else if (message.equals("admincommands")){
+           return new String[] {
+                   "Lists all admin commands currently registered.",
+           };
+       }
+
+       return null;
+   }
 }

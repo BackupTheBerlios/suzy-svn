@@ -173,4 +173,44 @@ public class ApiPlugin implements Plugin {
     }
 
 
+    /* (non-Javadoc)
+     * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+     */
+    public String[] getHelp(IrcCommandEvent ice) {
+        String message = ice.getMessageContent();
+
+        if (message.equals("apiplugin")) {
+            return new String[] {
+                    "Capable of parsing the java api. See "+ice.getPrefix()+"help api."
+            };
+        } else if (message.equals("api")){
+            return new String[] {
+                    "Search all information within the api for the given term.",
+                    "Example: "+ice.getPrefix()+"api String.toS*"
+            };
+        } else if (message.equals("class")){
+            return new String[] {
+                    "Search all classes within the api for the given term.",
+                    "Example: "+ice.getPrefix()+"api String*"
+            };
+        } else if (message.equals("method")){
+            return new String[] {
+                    "Search all methods within the api for the given term.",
+                    "Example: "+ice.getPrefix()+"api String.toS*"
+            };
+        } else if (message.equals("apistat")){
+            return new String[] {
+                    "Give some statistics for the api plugin."
+            };
+        } else if (message.equals("apireload")){
+            return new String[] {
+                    "Causes the api.dat file to be reloaded. If no such file exists, it will be rebuilt as specified in the config."
+            };
+        }
+
+
+        return null;
+    }
+
+
 }

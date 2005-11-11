@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.util.Set;
 
+import de.berlios.suzy.irc.IrcClient;
 import de.berlios.suzy.irc.IrcCommandEvent;
-import de.berlios.suzy.irc.IrcSender;
 import de.berlios.suzy.irc.PerformOnConnectPlugin;
 
 /**
@@ -64,7 +64,7 @@ public class JoinChannelPlugin implements PerformOnConnectPlugin {
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.PerformOnConnectPlugin#perform(de.berlios.suzy.irc.IrcSender)
      */
-    public void perform(IrcSender ircSender) {
+    public void perform(IrcClient ircSender) {
         StringBuilder channelString = new StringBuilder("");
         for (String chan: channels) {
             if (channelString.length() != 0) {
@@ -112,6 +112,32 @@ public class JoinChannelPlugin implements PerformOnConnectPlugin {
     private void join(IrcCommandEvent ice) {
         channels.add(ice.getMessageContent());
         ice.getSource().send("JOIN "+ice.getMessageContent());
+    }
+
+
+    /* (non-Javadoc)
+     * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+     */
+    public String[] getHelp(IrcCommandEvent ice) {
+        String message = ice.getMessageContent();
+
+        if (message.equals("joinchannelplugin")) {
+            return new String[] {
+                    "Joins and parts channels.",
+            };
+        } else if (message.equals("join")){
+            return new String[] {
+                    "Joins the given channel.",
+                    "Example: "+ice.getPrefix()+"join #java",
+            };
+        } else if (message.equals("part")){
+            return new String[] {
+                    "Leaves the given channel.",
+                    "Example: "+ice.getPrefix()+"part #java",
+            };
+        }
+
+        return null;
     }
 
 }

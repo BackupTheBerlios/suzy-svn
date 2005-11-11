@@ -25,7 +25,7 @@ import de.berlios.suzy.irc.Plugin;
  * @author honk
  */
 public class GooglePlugin implements Plugin {
-    private final static String CLIENT_KEY = "key";
+    private final static String CLIENT_KEY = "lC+q079QFHKAn6zE/aaOdBwgs0m1Wrl8";
 
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#getCommands()
@@ -77,5 +77,25 @@ public class GooglePlugin implements Plugin {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /* (non-Javadoc)
+     * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+     */
+    public String[] getHelp(IrcCommandEvent ice) {
+        String message = ice.getMessageContent();
+
+        if (message.equals("googleplugin")) {
+            return new String[] {
+                    "Sends the given text to google and displays the results.",
+            };
+        } else if (message.equals("google")){
+            return new String[] {
+                    "Searches google for the given text.",
+                    "Example: "+ice.getPrefix()+"google foobar",
+            };
+        }
+
+        return null;
     }
 }

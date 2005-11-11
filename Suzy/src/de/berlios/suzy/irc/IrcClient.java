@@ -26,7 +26,7 @@ import de.berlios.suzy.irc.plugin.LoaderPlugin;
  *
  * @author honk
  */
-public class IrcClient implements IrcSender {
+public class IrcClient {
     private String commandModifier;
     private String adminChannel;
     private String adminChannelPassword;
@@ -92,7 +92,7 @@ public class IrcClient implements IrcSender {
     private void connect() {
         try {
             admins.clear();
-            sendQueue.clear();
+            sendThread.clear();
 
             sock = new Socket(server, port);
             sock.setKeepAlive(true);
@@ -108,15 +108,12 @@ public class IrcClient implements IrcSender {
 
             send("USER hapi 0 0 :Honks Api Test");
             send("NICK "+nickName);
-            connectThread.connectSucceeded();
             return;
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.err.println("Connect failed - retrying");
-        connectThread.connectFailed();
     }
 
 
@@ -317,7 +314,7 @@ public class IrcClient implements IrcSender {
         }
 
         send("JOIN "+adminChannel+" "+adminChannelPassword);
-
+        connectThread.connectSucceeded();
     }
 
     private class IrcHandler extends Thread {
@@ -394,9 +391,7 @@ public class IrcClient implements IrcSender {
                 e.printStackTrace();
             }
             System.err.println("Connection lost - reconnecting");
-            disconnect();
-            throttleReconnect();
-            connect();
+            connectThread.disconnected();
         }
 
         private void handle(String line) {
@@ -434,31 +429,30 @@ public class IrcClient implements IrcSender {
 
     private class ConnectThread implements Runnable {
         private long lastPingReceived;
-        private boolean connectFailed = false;
+        private boolean connected = false;
         public ConnectThread() {
             restartTimer();
         }
         private void restartTimer() {
             lastPingReceived = System.currentTimeMillis();
         }
-        public void connectFailed() {
-            connectFailed = true;
+        public void disconnected() {
+            connected = false;
         }
         public void connectSucceeded() {
-            connectFailed = false;
+            connected = true;
         }
         public void pongReceived() {
             restartTimer();
         }
         public void run() {
             while(true) {
-                if (!connectFailed) {
+                if (connected) {
                     if (System.currentTimeMillis()-lastPingReceived > timeout) {
                         System.err.println("Timeout - forcing reconnect");
                         disconnect();
-                        throttleReconnect();
-                        connect();
-                        restartTimer();
+                        connected = false;
+                        continue;
                     }
 
                     send("PING :livecheck");
@@ -474,13 +468,11 @@ public class IrcClient implements IrcSender {
                     }
                 } else {
                     throttleReconnect();
-
-                    connect();
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                    if (!connected) {
+                        disconnect();
+                        connect();
                     }
+                    restartTimer();
                 }
             }
         }
@@ -514,7 +506,6 @@ public class IrcClient implements IrcSender {
 
                 try {
                     Thread.sleep(50);
-                    cleanSendQueue();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -527,8 +518,9 @@ public class IrcClient implements IrcSender {
             waitForTestCommand = false;
         }
 
-        private void cleanSendQueue() {
-
+        public void clear() {
+            bytesSent = 0;
+            sendQueue.clear();
         }
 
         private void send(String text) {
@@ -551,11 +543,40 @@ public class IrcClient implements IrcSender {
         try {
             int sleepModifier = badTries*maxWait/steps + minWait;
             sleepModifier = Math.min(sleepModifier, maxWait);
+            System.out.println("--- throttling for "+sleepModifier+"s");
             Thread.sleep(sleepModifier*1000);
+            System.out.println("--- done throttling");
         } catch (InterruptedException e1) {
             e1.printStackTrace();
         }
         lastConnectTry = System.currentTimeMillis();
+    }
+
+    /**
+     * returns the list of unrestricted plugincommands currently loaded
+     * @return a map containing command <-> plugin mappings
+     */
+    public Map<String, Plugin> getPluginList() {
+        return Collections.unmodifiableMap(loaderPlugin.getPluginList());
+    }
+
+    /**
+     * returns the list of restricted plugincommands currently loaded
+     * @return a map containing command <-> plugin mappings
+     */
+    public Map<String, Plugin> getRestrictedPluginList() {
+        return Collections.unmodifiableMap(loaderPlugin.getRestrictedPluginList());
+    }
+
+
+    /**
+     * returns the list of all plugincommands currently loaded
+     * @return a map containing command <-> plugin mappings
+     */
+    public Map<String, Plugin> getCompletePluginList() {
+        Map<String, Plugin> out = new HashMap<String, Plugin>(loaderPlugin.getPluginList());
+        out.putAll(loaderPlugin.getRestrictedPluginList());
+        return Collections.unmodifiableMap(out);
     }
 
 }

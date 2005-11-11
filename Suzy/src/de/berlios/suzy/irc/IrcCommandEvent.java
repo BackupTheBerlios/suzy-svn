@@ -8,7 +8,7 @@ package de.berlios.suzy.irc;
  * @author honk
  */
 public class IrcCommandEvent {
-    private IrcSender source;
+    private IrcClient source;
     private IrcTarget target;
     private String prefix;
     private String command;
@@ -22,7 +22,7 @@ public class IrcCommandEvent {
      * @param command the command that was issued
      * @param message the message following the command, stripped of leading and trailing spaces
      */
-    public IrcCommandEvent(IrcSender source, IrcTarget target, String prefix, String command, String message) {
+    public IrcCommandEvent(IrcClient source, IrcTarget target, String prefix, String command, String message) {
         this.source = source;
         this.target = target;
         this.prefix = prefix;
@@ -34,7 +34,7 @@ public class IrcCommandEvent {
      * returns the source for this event
      * @return the source where the event occured (typically an IrcClient)
      */
-    public IrcSender getSource() {
+    public IrcClient getSource() {
         return source;
     }
     /**
@@ -59,6 +59,10 @@ public class IrcCommandEvent {
         return message;
     }
 
+    /**
+     * returns the command prefix
+     * @return the command prefix
+     */
     public String getPrefix() {
         return prefix;
     }
