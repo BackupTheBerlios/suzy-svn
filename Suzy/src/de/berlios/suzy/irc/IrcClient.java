@@ -212,7 +212,7 @@ public class IrcClient implements IrcSender {
         if (!command.startsWith(commandModifier)) {
             return;
         } else {
-            command = messageContent[0].substring(commandModifier.length());
+            command = messageContent[0].substring(commandModifier.length()).toLowerCase();
         }
 
         String message = messageContent.length>1?messageContent[1]:"";
