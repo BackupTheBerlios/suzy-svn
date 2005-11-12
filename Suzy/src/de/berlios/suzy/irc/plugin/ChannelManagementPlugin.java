@@ -12,7 +12,9 @@ import de.berlios.suzy.irc.Plugin;
  *   <CAPTION><b>Commands available</b></CAPTION>
  *   <TR><TH>kick<TD>*<TD>kicks a user out of the channel
  *   <TR><TH>ban<TD>*<TD>kicks and bans a user out of the channel
+ *   <TR><TH>unban<TD>*<TD>unbans up to 6 users in the channel
  *   <TR><TH>mute<TD>*<TD>bans a user in the channel
+ *   <TR><TH>unmute<TD>*<TD>unbans up to 6 users in the channel
  *   <TR><TH>mode<TD>*<TD>sets a channel-mode
  *   <TR><TH>topic<TD>*<TD>sets a new topic for the channel
  *   <TR><TH>op<TD>*<TD>ops up to 6 users in the channel
@@ -27,7 +29,7 @@ import de.berlios.suzy.irc.Plugin;
  * @author sbeh
  */
 public class ChannelManagementPlugin implements Plugin {
-	private enum Command { KICK, BAN, MUTE, MODE, TOPIC, OP, DEOP, VOICE, DEVOICE, LIMIT, INVITE }
+	private enum Command { KICK, BAN, UNBAN, MUTE, UNMUTE, MODE, TOPIC, OP, DEOP, VOICE, DEVOICE, LIMIT, INVITE }
 
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#handleEvent(de.berlios.suzy.irc.IrcCommandEvent)
@@ -61,8 +63,14 @@ public class ChannelManagementPlugin implements Plugin {
 					ice.getSource().sendMessageTo(ice.getTarget().getChannel(), MessageTypes.PRIVMSG, "No victim specified.");
 				}
 				break;
+			case UNBAN:
+				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " -bbbbbb " + ice.getMessageContent());
+				break;
 			case MUTE:
 				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " -vo+b " + ice.getMessageContent() + " " + ice.getMessageContent() + " " + ice.getMessageContent());
+				break;
+			case UNMUTE:
+				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " -bbbbbb " + ice.getMessageContent());
 				break;
 			case MODE:
 				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " " + ice.getMessageContent());
