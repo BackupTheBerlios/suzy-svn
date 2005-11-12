@@ -19,6 +19,9 @@ public class MethodInfo extends QualifiedItemInfo {
 
         url = urlParent.getURL() + "#" + getNameWithCase() + signature;
         url = url.replaceAll(" ","%20");
+        url = url.replaceAll("\\(","%28");
+        url = url.replaceAll("\\)","%29");
+        url = url.replaceAll(",","%2c");
     }
 
     public MethodInfo(ClassInfo parent, String name, String signature, String baseUrl) {
