@@ -418,12 +418,7 @@ public class IrcClient {
      * @param text text to send
      */
     public void sendMessageTo(String target, MessageTypes type, String text) {
-        switch (type) {
-            case PRIVMSG: send("PRIVMSG "+target+" :"+text);
-                break;
-            case NOTICE: send("NOTICE "+target+" :"+text);
-                break;
-        }
+        send(type.getMessage(target, text));
     }
 
 
