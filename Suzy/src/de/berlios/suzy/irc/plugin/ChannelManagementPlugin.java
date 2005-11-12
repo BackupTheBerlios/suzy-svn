@@ -63,12 +63,10 @@ public class ChannelManagementPlugin implements Plugin {
 					ice.getSource().sendMessageTo(ice.getTarget().getChannel(), MessageTypes.PRIVMSG, "No victim specified.");
 				}
 				break;
-			case UNBAN:
-				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " -bbbbbb " + ice.getMessageContent());
-				break;
 			case MUTE:
 				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " -vo+b " + ice.getMessageContent() + " " + ice.getMessageContent() + " " + ice.getMessageContent());
 				break;
+			case UNBAN:
 			case UNMUTE:
 				ice.getSource().send("MODE " + ice.getTarget().getChannel() + " -bbbbbb " + ice.getMessageContent());
 				break;
@@ -122,7 +120,52 @@ public class ChannelManagementPlugin implements Plugin {
      * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
      */
     public String[] getHelp(IrcCommandEvent ice) {
-        // TODO Auto-generated method stub
-        return null;
+    	for(Command cmd : Command.values()) {
+    		if(!cmd.name().equals(ice.getMessageContent().toUpperCase()))
+    			continue;
+    		switch(cmd) {
+    		case KICK:
+    			return new String[] {
+    				"Kicks a user out of the channel",
+    				"Example: "+ice.getPrefix()+"kick Honk"
+    			};
+    		case BAN:
+    			return new String[] {
+    				"kicks and bans a user out of the channel",
+    				"Example: "+ice.getPrefix()+"ban Honk"
+    			};
+    		case MUTE:
+    			return new String[] {
+    				"bans,devoices and deops a user in the channel, so that he can not write new messages",
+    				"Example: "+ice.getPrefix()+"mute Honk"
+    			};
+    		case MODE:
+    			return new String[] {
+    				"Sets a channelmode",
+    				"Example: "+ice.getPrefix()+"mode +is"
+    			};
+    		case TOPIC:
+    			return new String[] {
+    				"Sets a new topic for the channel",
+    				"Example: "+ice.getPrefix()+"topic welcome to " + ice.getTarget().getChannel()
+    			};
+    		case LIMIT:
+    			return new String[] {
+    				"Sets a new userlimit for the channel",
+    				"Example: "+ice.getPrefix()+"limit 13"
+    			};
+    		case INVITE:
+    			return new String[] {
+    				"Invites an user into the channel",
+    				"Example: "+ice.getPrefix()+"invite Honk"
+    			};
+    		case OP: case DEOP: case VOICE: case DEVOICE: case UNBAN: case UNMUTE:
+    			return new String[] {
+    				cmd.name().toLowerCase() + "s up to 6 users in the channel",
+    				"Example: "+ice.getPrefix()+cmd.name().toLowerCase()+" Honk sbeh"
+    			};
+    		}
+    	}
+		return null;
     }
 }
