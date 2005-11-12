@@ -234,4 +234,23 @@ public class RequestHandler {
         return results;
     }
 
+    /**
+     * number of classes that are parsed
+     * @return number of classes that are parsed
+     */
+    public int classCount() {
+        return classes.length;
+    }
+
+    /**
+     * number of methods that are parsed
+     * @return number of classes that are parsed
+     */
+    public int methodCount() {
+        int methods = 0;
+        for (ClassInfo ci: classes) {
+            methods += ci.getMetods().length;
+        }
+        return methods;
+    }
 }

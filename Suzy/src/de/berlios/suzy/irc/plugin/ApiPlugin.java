@@ -30,8 +30,6 @@ import de.berlios.suzy.parser.RequestHandler;
 public class ApiPlugin implements Plugin {
     private long start;
     private long stop;
-    private int methods;
-    private int classes;
     private enum LastRequest {
         ALL, CLASSES, METHODS, NONE
     };
@@ -104,8 +102,8 @@ public class ApiPlugin implements Plugin {
             return;
         }
 
-        methods = RequestHandler.getInstance().parseMethods("*").size();
-        classes = RequestHandler.getInstance().parseClasses("*").size();
+        int methods = RequestHandler.getInstance().methodCount();
+        int classes = RequestHandler.getInstance().classCount();
 
         long diff = stop - start;
         String time = (diff/1000)+" µs";
