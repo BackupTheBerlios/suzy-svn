@@ -253,4 +253,12 @@ public class RequestHandler {
         }
         return methods;
     }
+
+    /**
+     * Getter method for getting the list of classes
+     * @return an array of ClassInfo entries contianing the entire available api.
+     */
+    public ClassInfo[] getClasses() {
+        return classes;
+    }
 }
