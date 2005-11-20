@@ -9,10 +9,12 @@ package de.berlios.suzy.parser;
  */
 public abstract class QualifiedItemInfo extends ItemInfo {
     private String lowerCaseQualifiedName;
+    private String qualifiedName;
     private String url;
 
     public QualifiedItemInfo(String qualifiedName, String name, String baseUrl) {
         super(name);
+        this.qualifiedName = qualifiedName;
         this.lowerCaseQualifiedName = qualifiedName.toLowerCase();
 
         String qualifiedUrl = qualifiedName.replace('.', '/');
@@ -23,6 +25,10 @@ public abstract class QualifiedItemInfo extends ItemInfo {
 
     public String getQualifiedName() {
         return lowerCaseQualifiedName;
+    }
+
+    public String getQualifiedNameWithCase() {
+        return qualifiedName;
     }
 
     public String getURL() {
