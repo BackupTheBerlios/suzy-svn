@@ -25,7 +25,7 @@ import de.berlios.suzy.irc.Plugin;
  * @author honk
  */
 public class GooglePlugin implements Plugin {
-    private final static String CLIENT_KEY = "key";
+    private final static String CLIENT_KEY = "foo";
 
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#getCommands()
@@ -54,6 +54,13 @@ public class GooglePlugin implements Plugin {
             return;
         }
 
+        String url = "";
+        try {
+            url = " | All results: http://www.google.com/search?q=" + URLEncoder.encode(ice.getMessageContent(), "ISO-8859-15");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
         GoogleSearch s = new GoogleSearch();
         s.setKey(CLIENT_KEY);
 
@@ -66,15 +73,11 @@ public class GooglePlugin implements Plugin {
                 ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "No results found for "+ice.getMessageContent()+".");
             } else {
                 String resultString = results[0].getTitle().replaceAll("<[^>]+>", "") +  " - " + results[0].getURL();
-                try {
-                    resultString += " | All results: http://www.google.com/search?q=" + URLEncoder.encode(ice.getMessageContent(), "ISO-8859-15");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                resultString += url;
                 ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, resultString);
             }
         } catch (GoogleSearchFault e) {
-            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, e.getMessage());
+            ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "There was a problem searching google."+url );
             e.printStackTrace();
         }
     }
