@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- 
+	default = normal -api cmd anything else will be 
+	-api.<name>
+	if no filename is given it will default to <name>.dat
+-->
+<parsers>
+	<parser name="default" fileName="api.dat">
+		<api>
+			<src>classes/jdk/</src>
+			<packages>java:javax</packages>
+			<base>http://java.sun.com/j2se/1.5.0/docs/api/</base>
+		</api>
+		<api>
+			<src>src/</src>
+			<packages>de.berlios.suzy</packages>
+			<base>http://www.xehonk.de/projects/files/apibot/javadoc/</base>
+		</api>
+		<api>
+			<src>classes/lwjgl/</src>
+			<packages>org.lwjgl</packages>
+			<base>http://lwjgl.org/javadoc/</base>
+		</api>
+	</parser>
+	<!-- 
+	<parser name="ee" fileName="">
+		<api>
+			<src>jee/classes/src</src>
+			<packages>javax</packages>
+			<base>http://java.sun.com/j2ee/1.4/docs/api/</base>
+		</api>
+	</parser>
+	-->
+</parsers>
