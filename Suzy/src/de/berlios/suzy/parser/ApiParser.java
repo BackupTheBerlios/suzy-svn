@@ -28,7 +28,7 @@ public class ApiParser {
 
 	protected String fileName;
 
-	protected ApiParser(String fileName, List<ParseEntry> parseEntries) {
+	public ApiParser(String fileName, List<ParseEntry> parseEntries) {
 		if (fileName == null || parseEntries == null) {
 			throw new IllegalArgumentException(
 					"fileName and/or parseEntries might not be null");
@@ -42,6 +42,7 @@ public class ApiParser {
 			File f = new File(fileName);
 			if (!f.exists()) {
 				createTree();
+				f = new File(fileName);
 			}
 			ObjectInputStream ois = new ObjectInputStream(
 					new FileInputStream(f));
@@ -71,7 +72,7 @@ public class ApiParser {
 								+ fileName + " -subpackages "
 								+ parseEntry.getPackages() + " -doclet "
 								+ ApiParser.class.getCanonicalName()
-								+ "-docletpath " + parserPath);
+								+ " -docletpath " + parserPath);
 				new ReaderThread(javadocProcess.getInputStream()).start();
 				new ReaderThread(javadocProcess.getErrorStream()).start();
 

@@ -77,6 +77,7 @@ public class ExtApiPlugin implements Plugin {
     public void handleEvent(IrcCommandEvent ice) {
         if (!ParserFactory.getInstance().supportsParserName(
                 extractParserName(ice.getCommand()))) {
+        	System.out.println("rejected");
             return;
         }
         if (ice.getCommand().startsWith("apistat")) {
@@ -254,7 +255,7 @@ public class ExtApiPlugin implements Plugin {
         int pos;
         String ret = "default";
         if ((pos = cmd.indexOf(".")) != -1) {
-            ret = cmd.substring(pos++);
+            ret = cmd.substring(++pos);
         }
         return ret;
     }

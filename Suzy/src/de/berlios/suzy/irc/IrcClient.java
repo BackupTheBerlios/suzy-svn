@@ -202,18 +202,39 @@ public class IrcClient {
     }
 
 
+    /*
+     * dirty fix for inline commands (requested by soulreaper) 
+     * currently only first hit search and restricted to admins
+     */
     private void handlePrivmsg(String[] cmd) {
         String[] messageContent = cmd[3].trim().substring(1).split("\\s+", 2);
-
-        String command = messageContent[0].toLowerCase();
-        if (!command.startsWith(commandModifier)) {
-            return;
-        } else {
-            command = messageContent[0].substring(commandModifier.length()).toLowerCase();
-        }
-
-        String message = messageContent.length>1?messageContent[1]:"";
         IrcTarget target = getTarget(cmd);
+        String command = messageContent[0].toLowerCase();
+        String message = messageContent.length > 1 ? messageContent[1] : "";
+        if (command.startsWith(commandModifier)) {
+            // standard cmd
+            command = messageContent[0].substring(commandModifier.length())
+                    .toLowerCase();
+            if (command.length() == 0) {
+                // return at once no need to process
+                return;
+            }
+        } else if (admins.contains(target.getUser())) {
+            // could be inline cmd
+            // grab whole msg
+            String content = cmd[3].trim().substring(1);
+            int pos;
+            if ((pos = content.indexOf(commandModifier)) == -1 ) return;
+            content = content.substring(++pos);
+            // message one word only:
+            // String[] tmp = content.split("\\s+",3); 
+            String[] tmp = content.split("\\s+",2);
+            command = tmp[0];
+            message = tmp[1];
+            
+        } else {
+            return;
+        }
 
 		boolean restricted = false;
         Plugin plugin = loaderPlugin.getPluginList().get(command);

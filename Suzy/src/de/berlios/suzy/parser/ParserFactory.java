@@ -37,6 +37,9 @@ public class ParserFactory {
 
 	private void loadConfig() {
 		try {
+			// no idea why needed but w/o on test it failed
+			System.setProperty("javax.xml.parsers.DocumentBuilderFactory",
+            "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
 			DocumentBuilderFactory builderFactory = DocumentBuilderFactory
 					.newInstance();
 			DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -44,7 +47,6 @@ public class ParserFactory {
 			NodeList parserElements = doc.getElementsByTagName(PARSER_ELEMENT);
 			createParsers(parserElements);
 		} catch (Exception e) {
-			// sux
 			e.printStackTrace();
 		}
 
