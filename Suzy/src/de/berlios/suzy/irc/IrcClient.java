@@ -69,14 +69,15 @@ public class IrcClient {
      * @param timeout timeout after which the bot will reconnect to the irc server in seconds (120 seconds should be a good value)
      * @param commandModifier prefix the bot will look for when searching for commands from users (e.g. "!" if you want the bot to react to "!help")
      */
-    public IrcClient(String network, String server, int port, String nickName, String adminChannel, String adminChannelPassword, int timeout, String commandModifier) {
+    public IrcClient(String network, String server, int port, String nickName, String adminChannel,
+            String adminChannelPassword, int timeout, String commandModifier) {
         this.server = server;
         this.port = port;
         this.nickName = nickName;
         this.desiredNickName = nickName;
         this.adminChannel = adminChannel;
         this.adminChannelPassword = adminChannelPassword;
-        this.timeout = timeout*1000;    //store as ms instead of second
+        this.timeout = timeout * 1000; //store as ms instead of second
         this.commandModifier = commandModifier;
 
         loaderPlugin = new LoaderPlugin(network);
@@ -107,7 +108,7 @@ public class IrcClient {
             }
 
             send("USER hapi 0 0 :Honks Api Test");
-            send("NICK "+nickName);
+            send("NICK " + nickName);
             return;
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -123,13 +124,13 @@ public class IrcClient {
 
         if (channel.equals(adminChannel)) {
             String message = cmd[3];
-            String userString = message.substring(message.indexOf(':')+1);
+            String userString = message.substring(message.indexOf(':') + 1);
 
             String[] users = userString.replaceAll("[@\\+]", "").split(" ");
 
-            System.out.println("channel: "+channel+" users "+Arrays.toString(users));
+            System.out.println("channel: " + channel + " users " + Arrays.toString(users));
 
-            for(String user: users) {
+            for (String user : users) {
                 admins.add(user);
             }
         }
@@ -141,9 +142,9 @@ public class IrcClient {
 
         if (myNick.equals("*")) {
             String nickInUse = cmd[3].substring(0, cmd[3].indexOf(' '));
-            String newNickName = nickName+(int)(Math.random()*10);
-            System.out.println("Nickname "+nickInUse+" in use, changing to: "+newNickName);
-            send("NICK "+newNickName);
+            String newNickName = nickName + (int) (Math.random() * 10);
+            System.out.println("Nickname " + nickInUse + " in use, changing to: " + newNickName);
+            send("NICK " + newNickName);
             this.nickName = newNickName;
         }
     }
@@ -169,7 +170,7 @@ public class IrcClient {
 
     private void handleJoin(String[] cmd) {
         String[] channels = cmd[2].split("[:,]");
-        for (String channel: channels) {
+        for (String channel : channels) {
             if (channel.equals(adminChannel)) {
                 String target = parseHostToNick(cmd[0]);
                 admins.add(target);
@@ -179,7 +180,7 @@ public class IrcClient {
 
     private void handlePart(String[] cmd) {
         String[] channels = cmd[2].split("[:,]");
-        for (String channel: channels) {
+        for (String channel : channels) {
             if (channel.equals(adminChannel)) {
                 String target = parseHostToNick(cmd[0]);
                 admins.remove(target);
@@ -194,9 +195,9 @@ public class IrcClient {
      * @param text text to send
      */
     public void send(String text) {
-        System.out.println("- > "+text);
+        System.out.println("- > " + text);
         text = text.substring(0, Math.min(511, text.length()));
-        text = text+"\n";
+        text = text + "\n";
 
         sendQueue.add(text);
     }
@@ -213,8 +214,7 @@ public class IrcClient {
         String message = messageContent.length > 1 ? messageContent[1] : "";
         if (command.startsWith(commandModifier)) {
             // standard cmd
-            command = messageContent[0].substring(commandModifier.length())
-                    .toLowerCase();
+            command = messageContent[0].substring(commandModifier.length()).toLowerCase();
             if (command.length() == 0) {
                 // return at once no need to process
                 return;
@@ -224,57 +224,65 @@ public class IrcClient {
             // grab whole msg
             String content = cmd[3].trim().substring(1);
             int pos;
-            if ((pos = content.indexOf(commandModifier)) == -1 ) return;
+            if ((pos = content.indexOf(commandModifier)) == -1) {
+                return;
+            }
+            
             content = content.substring(++pos);
             // message one word only:
             // String[] tmp = content.split("\\s+",3); 
-            String[] tmp = content.split("\\s+",2);
+            String[] tmp = content.split("\\s+", 2);
             command = tmp[0];
-            message = tmp[1];
+            if (tmp.length >= 2) {
+                message = tmp[1];
+            } else {
+                message = "";
+            }
             
+
         } else {
             return;
         }
 
-		boolean restricted = false;
+        boolean restricted = false;
         Plugin plugin = loaderPlugin.getPluginList().get(command);
         if (plugin == null) {
-        	// restricted?
-        	plugin = loaderPlugin.getRestrictedPluginList().get(command);
-        	if (plugin != null) {
-        		restricted = true;
-        	} else {
-        		// we could be using a namespace
-				int colonIndex;
-		        if ((colonIndex = command.indexOf(':')) != -1) {
-		            String pluginName = command.substring(0, colonIndex);
-		            command = command.substring(colonIndex + 1);
-					plugin = loaderPlugin.getPluginList().get(command);
-			        if (plugin == null) {
-			        	// restricted?
-			        	plugin = loaderPlugin.getRestrictedPluginList().get(command);
-			        	if (plugin != null) {
-			        		restricted = true;
-			        	} else {
-			        		return; // no handler
-			        	}
-			        }
-		        	String adjustedClassName = pluginName + "plugin";
-		        	String actualClassName = plugin.getClass().getSimpleName().toLowerCase();
-		        	if (!adjustedClassName.equals(actualClassName)) {
-		        		return; // incorrect namespace
-		        	}
-			    } else {
-			    	return; // or maybe there is just no handler
-			    }
-        	}
+            // restricted?
+            plugin = loaderPlugin.getRestrictedPluginList().get(command);
+            if (plugin != null) {
+                restricted = true;
+            } else {
+                // we could be using a namespace
+                int colonIndex;
+                if ((colonIndex = command.indexOf(':')) != -1) {
+                    String pluginName = command.substring(0, colonIndex);
+                    command = command.substring(colonIndex + 1);
+                    plugin = loaderPlugin.getPluginList().get(command);
+                    if (plugin == null) {
+                        // restricted?
+                        plugin = loaderPlugin.getRestrictedPluginList().get(command);
+                        if (plugin != null) {
+                            restricted = true;
+                        } else {
+                            return; // no handler
+                        }
+                    }
+                    String adjustedClassName = pluginName + "plugin";
+                    String actualClassName = plugin.getClass().getSimpleName().toLowerCase();
+                    if (!adjustedClassName.equals(actualClassName)) {
+                        return; // incorrect namespace
+                    }
+                } else {
+                    return; // or maybe there is just no handler
+                }
+            }
         }
 
         // command could be still using namespace (case of duplicates)
         int colonIndex;
         if ((colonIndex = command.indexOf(':')) != -1) {
             command = command.substring(colonIndex + 1);
-		}
+        }
 
         if (restricted) {
             if (admins.contains(target.getUser())) {
@@ -289,17 +297,17 @@ public class IrcClient {
         try {
             plugin.handleEvent(ircCmdEvent);
         } catch (Throwable t) {
-            sendMessageTo(ircCmdEvent.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Execution failed: "+t.getClass().getName()+": "+t.getMessage());
+            sendMessageTo(ircCmdEvent.getTarget().getDefaultTarget(), MessageTypes.PRIVMSG, "Execution failed: "
+                    + t.getClass().getName() + ": " + t.getMessage());
             t.printStackTrace();
         }
 
     }
 
 
-
     private IrcTarget getTarget(String[] cmd) {
-        if(cmd[2].equals(nickName) || cmd[2].equals(desiredNickName)) {
-            return new IrcTarget(parseHostToNick(cmd[0]), null,true);
+        if (cmd[2].equals(nickName) || cmd[2].equals(desiredNickName)) {
+            return new IrcTarget(parseHostToNick(cmd[0]), null, true);
         } else {
             return new IrcTarget(parseHostToNick(cmd[0]), cmd[2], false);
         }
@@ -313,7 +321,7 @@ public class IrcClient {
     }
 
     private void disconnect() {
-        if (pw != null) {   //bypass spam protection, we're quitting anyway
+        if (pw != null) { //bypass spam protection, we're quitting anyway
             pw.write("QUIT\n");
             pw.flush();
         }
@@ -330,21 +338,22 @@ public class IrcClient {
     }
 
     private void handleConnected() {
-        for (PerformOnConnectPlugin p: loaderPlugin.getPerformOnConnectList()) {
+        for (PerformOnConnectPlugin p : loaderPlugin.getPerformOnConnectList()) {
             p.perform(this);
         }
 
-        send("JOIN "+adminChannel+" "+adminChannelPassword);
+        send("JOIN " + adminChannel + " " + adminChannelPassword);
         connectThread.connectSucceeded();
     }
 
     private class IrcHandler extends Thread {
 
         private Map<String, IrcAction> actionMap = new HashMap<String, IrcAction>();
+
         public IrcHandler() {
             actionMap.put("PING", new IrcAction() {
                 public void run(String[] cmd) {
-                    send("PONG "+cmd[1]);
+                    send("PONG " + cmd[1]);
                 }
             });
             actionMap.put("PONG", new IrcAction() {
@@ -402,7 +411,7 @@ public class IrcClient {
             try {
                 while (true) {
                     line = br.readLine();
-                    System.out.println("<-- "+line);
+                    System.out.println("<-- " + line);
                     if (line == null) {
                         break;
                     }
@@ -446,25 +455,31 @@ public class IrcClient {
     private class ConnectThread implements Runnable {
         private long lastPingReceived;
         private boolean connected = false;
+
         public ConnectThread() {
             restartTimer();
         }
+
         private void restartTimer() {
             lastPingReceived = System.currentTimeMillis();
         }
+
         public void disconnected() {
             connected = false;
         }
+
         public void connectSucceeded() {
             connected = true;
         }
+
         public void pongReceived() {
             restartTimer();
         }
+
         public void run() {
-            while(true) {
+            while (true) {
                 if (connected) {
-                    if (System.currentTimeMillis()-lastPingReceived > timeout) {
+                    if (System.currentTimeMillis() - lastPingReceived > timeout) {
                         System.err.println("Timeout - forcing reconnect");
                         disconnect();
                         connected = false;
@@ -474,11 +489,11 @@ public class IrcClient {
                     send("PING :livecheck");
 
                     if (!IrcClient.this.desiredNickName.equals(IrcClient.this.nickName)) {
-                        send("NICK :"+desiredNickName);
+                        send("NICK :" + desiredNickName);
                     }
 
                     try {
-                        Thread.sleep(timeout/5);
+                        Thread.sleep(timeout / 5);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -501,10 +516,10 @@ public class IrcClient {
         private boolean waitForTestCommand = false;
 
         public void run() {
-            while(true) {
+            while (true) {
                 if (pw == null) {
                     System.err.println("Trying to send without being connected.");
-                } else if (!waitForTestCommand) {  //skip if waiting for permission to send more
+                } else if (!waitForTestCommand) { //skip if waiting for permission to send more
                     Iterator<String> it = sendQueue.iterator();
 
                     if (it.hasNext()) {
@@ -541,14 +556,14 @@ public class IrcClient {
 
         private void send(String text) {
             bytesSent += text.length();
-            System.out.print("--> "+ text);
+            System.out.print("--> " + text);
             pw.write(text);
             pw.flush();
         }
     }
 
     private void throttleReconnect() {
-        int timeSinceLastTry = (int)((System.currentTimeMillis() - lastConnectTry)/1000);
+        int timeSinceLastTry = (int) ((System.currentTimeMillis() - lastConnectTry) / 1000);
         if (timeSinceLastTry < maxWait) {
             badTries++;
         } else {
@@ -557,10 +572,10 @@ public class IrcClient {
 
 
         try {
-            int sleepModifier = badTries*maxWait/steps + minWait;
+            int sleepModifier = badTries * maxWait / steps + minWait;
             sleepModifier = Math.min(sleepModifier, maxWait);
-            System.out.println("--- throttling for "+sleepModifier+"s");
-            Thread.sleep(sleepModifier*1000);
+            System.out.println("--- throttling for " + sleepModifier + "s");
+            Thread.sleep(sleepModifier * 1000);
             System.out.println("--- done throttling");
         } catch (InterruptedException e1) {
             e1.printStackTrace();
