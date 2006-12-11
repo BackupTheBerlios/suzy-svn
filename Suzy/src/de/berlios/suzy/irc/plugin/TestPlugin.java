@@ -25,7 +25,8 @@ public class TestPlugin implements Plugin {
         return new String[] {
                 "test",
                 "testaction",
-                "testnotice"
+                "testnotice",
+                "raw"
         };
     }
 
@@ -50,7 +51,12 @@ public class TestPlugin implements Plugin {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.ACTION, "moo!");
         } else if (ice.getCommand().equals("testnotice")) {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(), MessageTypes.NOTICE, "moo!");
+        } else if (ice.getCommand().equals("raw")) {
+            ice.getSource().send(ice.getMessageContent());
         }
+
+
+
     }
 
     public String[] getHelp(IrcCommandEvent ice) {

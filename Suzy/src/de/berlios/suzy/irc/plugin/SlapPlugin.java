@@ -5,9 +5,8 @@ import java.lang.reflect.Modifier;
 import de.berlios.suzy.irc.IrcCommandEvent;
 import de.berlios.suzy.irc.MessageTypes;
 import de.berlios.suzy.irc.Plugin;
-
-import de.berlios.suzy.parser.RequestHandler;
 import de.berlios.suzy.parser.ClassInfo;
+import de.berlios.suzy.parser.ParserFactory;
 
 /**
  * Slap plugin that.picks a random class from the class library, adds a short
@@ -84,7 +83,7 @@ public class SlapPlugin implements Plugin {
 
     public String getRandomClass() {
 
-        ClassInfo[] classes = RequestHandler.getInstance().getClasses();
+        ClassInfo[] classes = ParserFactory.getInstance().getParser("default").getClassInfos();
 
         return classes[(int) (classes.length * Math.random())]
                 .getQualifiedNameWithCase();

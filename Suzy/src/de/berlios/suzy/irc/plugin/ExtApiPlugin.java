@@ -12,7 +12,6 @@ import de.berlios.suzy.irc.MessageTypes;
 import de.berlios.suzy.irc.Plugin;
 import de.berlios.suzy.parser.ApiSearchUtil;
 import de.berlios.suzy.parser.ParserFactory;
-import de.berlios.suzy.parser.RequestHandler;
 
 /**
  * Simple refactoring of {@link ApiPlugin} to support multiple apis.
@@ -23,7 +22,7 @@ import de.berlios.suzy.parser.RequestHandler;
 public class ExtApiPlugin implements Plugin {
 
     private enum LastRequest {
-        ALL, CLASSES, METHODS, NONE
+        ALL, CLASSES, METHODS, FIELDS, NONE
     };
 
     private HashMap<String, StatEntry> requestMap;
@@ -41,7 +40,7 @@ public class ExtApiPlugin implements Plugin {
      * @see de.berlios.suzy.irc.Plugin#getCommands()
      */
     public String[] getCommands() {
-        String[] defaultCmds = new String[] { "api", "class", "method",
+        String[] defaultCmds = new String[] { "api", "class", "method", "field",
                  "apistat" };
         // for old usage
         List<String> cmds = new ArrayList<String>(Arrays.asList(defaultCmds));
@@ -50,7 +49,7 @@ public class ExtApiPlugin implements Plugin {
                 cmds.add(cmd + "." + parserName);
             }
         }
-        return cmds.toArray(defaultCmds);
+        return cmds.toArray(new String[cmds.size()]);
     }
 
     /*
@@ -66,7 +65,7 @@ public class ExtApiPlugin implements Plugin {
                 cmds.add(cmd + "." + parserName);
             }
         }
-        return cmds.toArray(defaultCmds);
+        return cmds.toArray(new String[cmds.size()]);
     }
 
     /*
@@ -77,7 +76,6 @@ public class ExtApiPlugin implements Plugin {
     public void handleEvent(IrcCommandEvent ice) {
         if (!ParserFactory.getInstance().supportsParserName(
                 extractParserName(ice.getCommand()))) {
-        	System.out.println("rejected");
             return;
         }
         if (ice.getCommand().startsWith("apistat")) {
@@ -101,6 +99,8 @@ public class ExtApiPlugin implements Plugin {
             classes(ice);
         } else if (ice.getCommand().startsWith("method")) {
             methods(ice);
+        } else if (ice.getCommand().startsWith("field")) {
+            fields(ice);
         } 
     }
 
@@ -123,6 +123,8 @@ public class ExtApiPlugin implements Plugin {
             return;
         }
 
+        int fields = ApiSearchUtil.fieldCount(ParserFactory.getInstance()
+                .getParser(parserName).getClassInfos());
         int methods = ApiSearchUtil.methodCount(ParserFactory.getInstance()
                 .getParser(parserName).getClassInfos());
         int classes = ApiSearchUtil.classCount(ParserFactory.getInstance()
@@ -145,6 +147,10 @@ public class ExtApiPlugin implements Plugin {
             break;
         case METHODS:
             answer = "Searched " + methods + " methods in " + time;
+            total = methods;
+            break;
+        case FIELDS:
+            answer = "Searched " + fields + " fields in " + time;
             total = methods;
             break;
         }
@@ -174,8 +180,11 @@ public class ExtApiPlugin implements Plugin {
         String parserName = extractParserName(ice.getCommand());
         StatEntry stat = new StatEntry();
         stat.start(LastRequest.CLASSES);
-        Set<String> matches = RequestHandler.getInstance().parseClasses(
-                ice.getMessageContent());
+        /*Set<String> matches = RequestHandler.getInstance().parseClasses(
+                ice.getMessageContent());*/
+        Set<String> matches = ApiSearchUtil.parseClasses(ParserFactory
+                .getInstance().getParser(parserName).getClassInfos(), ice
+                .getMessageContent());
         stat.end();
         requestMap.put(parserName, stat);
         reply(ice, matches);
@@ -185,12 +194,26 @@ public class ExtApiPlugin implements Plugin {
         String parserName = extractParserName(ice.getCommand());
         StatEntry stat = new StatEntry();
         stat.start(LastRequest.METHODS);
-        Set<String> matches = RequestHandler.getInstance().parseMethods(
-                ice.getMessageContent());
+        Set<String> matches = ApiSearchUtil.parseMethods(ParserFactory
+                .getInstance().getParser(parserName).getClassInfos(), ice
+                .getMessageContent());
         stat.end();
         requestMap.put(parserName, stat);
         reply(ice, matches);
     }
+    
+    private void fields(IrcCommandEvent ice) {
+        String parserName = extractParserName(ice.getCommand());
+        StatEntry stat = new StatEntry();
+        stat.start(LastRequest.FIELDS);
+        Set<String> matches = ApiSearchUtil.parseFields(ParserFactory
+                .getInstance().getParser(parserName).getClassInfos(), ice
+                .getMessageContent());
+        stat.end();
+        requestMap.put(parserName, stat);
+        reply(ice, matches);
+    }
+
 
     private void reply(IrcCommandEvent ice, Set<String> matches) {
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(),
@@ -232,16 +255,20 @@ public class ExtApiPlugin implements Plugin {
                     + ice.getPrefix() + "help api." };
         } else if (message.equals("api")) {
             return new String[] {
-                    "Search all information within the api for the given term.",
+                    "Search all information (classes+methods) within the api for the given term.",
                     "Example: " + ice.getPrefix() + "api String.toS*" };
         } else if (message.equals("class")) {
             return new String[] {
                     "Search all classes within the api for the given term.",
-                    "Example: " + ice.getPrefix() + "api String*" };
+                    "Example: " + ice.getPrefix() + "class String*" };
         } else if (message.equals("method")) {
             return new String[] {
                     "Search all methods within the api for the given term.",
-                    "Example: " + ice.getPrefix() + "api String.toS*" };
+                    "Example: " + ice.getPrefix() + "method String.toS*" };
+        } else if (message.equals("field")) {
+            return new String[] {
+                    "Search all fields within the api for the given term.",
+                    "Example: " + ice.getPrefix() + "field String.toS*" };
         } else if (message.equals("apistat")) {
             return new String[] { "Give some statistics for the api plugin." };
         } else if (message.equals("apireload")) {

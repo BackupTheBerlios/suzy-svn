@@ -136,7 +136,7 @@ public class ApiParser {
 				}
 
 				for (FieldDoc fd : classDoc.fields(true)) {
-					FieldInfo fi = new FieldInfo(fd.name(), fd.type()
+					FieldInfo fi = new FieldInfo(ci, fd.name(), fd.type()
 							.qualifiedTypeName());
 					ci.addField(fi);
 				}

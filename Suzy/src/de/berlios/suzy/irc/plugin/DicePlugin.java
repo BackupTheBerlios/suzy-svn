@@ -1,12 +1,12 @@
 package de.berlios.suzy.irc.plugin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import de.berlios.suzy.irc.IrcCommandEvent;
 import de.berlios.suzy.irc.MessageTypes;
 import de.berlios.suzy.irc.Plugin;
-
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *

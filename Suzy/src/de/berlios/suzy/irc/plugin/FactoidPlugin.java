@@ -2,8 +2,8 @@ package de.berlios.suzy.irc.plugin;
 
 
 import java.util.Calendar;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;

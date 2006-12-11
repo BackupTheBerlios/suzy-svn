@@ -23,7 +23,7 @@ public class ApiSearchUtil {
     /**
      * number of methods that are parsed
      * 
-     * @return number of classes that are parsed
+     * @return number of methods that are parsed
      */
     public static int methodCount(ClassInfo[] classes) {
         int methods = 0;
@@ -32,6 +32,20 @@ public class ApiSearchUtil {
         }
         return methods;
     }
+    
+    /**
+     * number of fields that are parsed
+     * 
+     * @return number of fields that are parsed
+     */
+    public static int fieldCount(ClassInfo[] classes) {
+        int methods = 0;
+        for (ClassInfo ci : classes) {
+            methods += ci.getMetods().length;
+        }
+        return methods;
+    }
+
 
     /**
      * Searches classes for the pattern specified. If a result is found, the
@@ -69,6 +83,26 @@ public class ApiSearchUtil {
         Set<String> methods = findMethods(classes, splitPattern);
 
         return methods;
+    }
+    
+
+    /**
+     * Searches fields for the pattern specified. If a result is found, the
+     * matching URL will be added to a List. <br>
+     * The pattern will be parsed to strip all '*' from it. The rest of the
+     * pattern is matched against the method. At places where a '*' was, an
+     * arbitrary number of characters will be allowed.
+     * 
+     * @param pattern
+     *            pattern to be matched
+     * @return a List containing all matches
+     */
+    public static Set<String> parseFields(ClassInfo[] classes, String pattern) {
+        String[] splitPattern = processPattern(pattern);
+
+        Set<String> fields = findFields(classes, splitPattern);
+
+        return fields;
     }
 
     /**
@@ -179,6 +213,66 @@ public class ApiSearchUtil {
         }
         return results;
     }
+    
+    
+    
+
+    private static Set<String> findFields(ClassInfo[] classes,
+            String[] splitPattern) {
+        return findFields(classes, splitPattern, new HashSet<String>());
+    }
+
+    private static Set<String> findFields(ClassInfo[] classes,
+            String[] splitPattern, Set<String> results) {
+        for (ClassInfo ci : classes) {
+            for (FieldInfo fi : ci.getFields()) {
+                if (!fi.getQualifiedName().endsWith(
+                        splitPattern[splitPattern.length - 1])) {
+                    continue;
+                }
+                if (!fi.getQualifiedName().startsWith(splitPattern[0])) {
+                    if (!fi.getHalfQualifiedName().startsWith(splitPattern[0])) {
+                        if (!fi.getName().startsWith(splitPattern[0])) {
+                            continue;
+                        }
+                    }
+                }
+                int oldIndexOf = -1;
+                boolean found = true;
+
+                for (String currentPattern : splitPattern) {
+                    if (currentPattern.length() == 0) {
+                        continue;
+                    }
+                    int indexOf = fi.getQualifiedName().indexOf(currentPattern,
+                            oldIndexOf + 1);
+                    if (indexOf == -1) {
+                        found = false;
+                        break;
+                    }
+                    oldIndexOf = indexOf;
+                }
+                if (found) {
+                    if (splitPattern.length == 1) { // special case: ending ==
+                                                    // beginning (e.g.
+                                                    // Integer.getInteger, no
+                                                    // wildcard)
+                        if (!fi.getQualifiedName().equals(splitPattern[0])
+                                && !fi.getHalfQualifiedName().equals(
+                                        splitPattern[0])
+                                && !fi.getName().equals(splitPattern[0])) {
+                            continue;
+                        }
+                    }
+
+                    results.add(fi.getURL());
+                }
+            }
+        }
+        return results;
+    }
+    
+    
 
     private static Set<String> findClasses(ClassInfo[] classes,
             String[] splitPattern) {

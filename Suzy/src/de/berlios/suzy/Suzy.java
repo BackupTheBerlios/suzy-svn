@@ -6,13 +6,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import de.berlios.suzy.irc.IrcClient;
-import de.berlios.suzy.parser.RequestHandler;
 
 
 
 /**
- * This class is the entrypoint to the ApiBot. It starts the {@link IrcClient}
- * and causes the {@link RequestHandler} to load the api.
+ * This class is the entrypoint to the ApiBot. It starts the {@link IrcClient}.
  *
  * @author honk
  */

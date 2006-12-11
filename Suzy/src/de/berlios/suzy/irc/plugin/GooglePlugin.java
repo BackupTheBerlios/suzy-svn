@@ -25,7 +25,7 @@ import de.berlios.suzy.irc.Plugin;
  * @author honk
  */
 public class GooglePlugin implements Plugin {
-    private final static String CLIENT_KEY = "foo";
+    private final static String CLIENT_KEY = "lC+q079QFHKAn6zE/aaOdBwgs0m1Wrl8";
 
     /* (non-Javadoc)
      * @see de.berlios.suzy.irc.Plugin#getCommands()
