@@ -7,22 +7,29 @@
 <parsers>
 	<parser name="default" fileName="api.dat">
 		<api>
-			<src>classes/jdk/</src>
+			<src>classes/src-zip/</src>
 			<packages>java:javax</packages>
-			<base>http://java.sun.com/j2se/1.5.0/docs/api/</base>
+			<base>http://java.sun.com/javase/6/docs/api/</base>
 		</api>
+	</parser>
+	
+	<parser name="suzy" fileName="api-suzy.dat">
 		<api>
 			<src>src/</src>
 			<packages>de.berlios.suzy</packages>
-			<base>http://www.xehonk.de/projects/files/apibot/javadoc/</base>
+			<base>http://www.xehonk.de/projects/files/suzy/javadoc/</base>
 		</api>
+	</parser>
+	
+	<parser name="lwjgl" fileName="api-lwjgl.dat">
 		<api>
-			<src>classes/lwjgl/</src>
+			<src>classes/lwjgl-src/</src>
 			<packages>org.lwjgl</packages>
 			<base>http://lwjgl.org/javadoc/</base>
 		</api>
 	</parser>
-	<!-- 
+
+	<!--
 	<parser name="ee" fileName="">
 		<api>
 			<src>jee/classes/src</src>
@@ -31,4 +38,5 @@
 		</api>
 	</parser>
 	-->
+	
 </parsers>
