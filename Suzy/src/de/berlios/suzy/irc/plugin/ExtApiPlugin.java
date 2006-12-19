@@ -89,7 +89,7 @@ public class ExtApiPlugin implements Plugin {
         if (ice.getMessageContent().length() == 0) {
             ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(),
                     MessageTypes.PRIVMSG,
-                    "http://java.sun.com/j2se/1.5.0/docs/api/");
+                    "Missing argument: see "+ice.getPrefix()+"help");
             return;
         }
 
@@ -110,7 +110,7 @@ public class ExtApiPlugin implements Plugin {
                 MessageTypes.PRIVMSG, "Reloading api " + name + ".");
         ParserFactory.getInstance().getParser(name).reload();
         ice.getSource().sendMessageTo(ice.getTarget().getDefaultTarget(),
-                MessageTypes.PRIVMSG, "The api " + name + "was reloaded.");
+                MessageTypes.PRIVMSG, "The api " + name + " was reloaded.");
 
     }
 
