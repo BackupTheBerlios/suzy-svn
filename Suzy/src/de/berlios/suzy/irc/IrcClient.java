@@ -107,7 +107,7 @@ public class IrcClient {
             } catch (InterruptedException ie) {
             }
 
-            send("USER hapi 0 0 :Honks Api Test");
+            send("USER suzy 0 0 :Suzy Api Bot");
             send("NICK " + nickName);
             return;
         } catch (UnknownHostException e) {
@@ -228,7 +228,7 @@ public class IrcClient {
                 return;
             }
             
-            content = content.substring(++pos);
+            content = content.substring(pos+2);
             // message one word only:
             // String[] tmp = content.split("\\s+",3); 
             String[] tmp = content.split("\\s+", 2);
