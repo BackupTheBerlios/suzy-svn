@@ -224,7 +224,7 @@ public class IrcClient {
             // grab whole msg
             String content = cmd[3].trim().substring(1);
             int pos;
-            if ((pos = content.indexOf(commandModifier)) == -1) {
+            if ((pos = content.indexOf(" "+commandModifier)) == -1) {
                 return;
             }
             

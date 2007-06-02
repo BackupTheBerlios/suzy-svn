@@ -22,6 +22,12 @@ public class MethodInfo extends QualifiedItemInfo {
         url = url.replaceAll("\\(","%28");
         url = url.replaceAll("\\)","%29");
         url = url.replaceAll(",","%2c");
+        
+        String oldUrl;
+        do {
+            oldUrl = url;
+            url = url.replaceAll("<[^<>]*>","");
+        } while (!oldUrl.equals(url));
     }
 
     public MethodInfo(ClassInfo parent, String name, String signature, String baseUrl) {
