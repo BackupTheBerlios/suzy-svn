@@ -40,17 +40,17 @@ public class ExecPlugin implements Plugin {
 
 
     public String[] getCommands() {
-        return new String[] { "exec" };
+        return new String[] { "execp" };
     }
 
     public String[] getRestrictedCommands() {
-        return new String[] { "execpub" };
+        return new String[] { "exec" };
     }
 
     public void handleEvent(IrcCommandEvent ice) {
-        if (ice.getCommand().equals("exec")) {
+        if (ice.getCommand().equals("execp")) {
             exec(ice, false);
-        } else if (ice.getCommand().equals("execpub")) {
+        } else if (ice.getCommand().equals("exec")) {
             exec(ice, true);
         }
     }
@@ -74,9 +74,29 @@ public class ExecPlugin implements Plugin {
             writer.println("import java.util.concurrent.*;");
             writer.println("import java.util.regex.*;");
             writer.println("import java.util.zip.*;");
+            writer.println("import java.lang.reflect.*;");
             writer.println("import java.math.*;");
             writer.println("import java.text.*;");
             writer.println("public class Exec {");
+            writer.println("    public static void sysout(Object object) {");
+            writer.println("        if (object instanceof Object[]) {");
+            writer.println("            System.out.println(Arrays.deepToString((Object[])object));");
+            writer.println("        } else if (object instanceof int[]) {");
+            writer.println("            System.out.println(Arrays.toString((int[])object));");
+            writer.println("        } else if (object instanceof long[]) {");
+            writer.println("            System.out.println(Arrays.toString((long[])object));");
+            writer.println("        } else if (object instanceof float[]) {");
+            writer.println("            System.out.println(Arrays.toString((float[])object));");
+            writer.println("        } else if (object instanceof double[]) {");
+            writer.println("            System.out.println(Arrays.toString((double[])object));");
+            writer.println("        } else if (object instanceof char[]) {");
+            writer.println("            System.out.println(Arrays.toString((char[])object));");
+            writer.println("        } else if (object instanceof boolean[]) {");
+            writer.println("            System.out.println(Arrays.toString((boolean[])object));");
+            writer.println("        } else {");
+            writer.println("            System.out.println(object);");
+            writer.println("        }");
+            writer.println("    }");
             writer.println("    public static void main(String[] args) throws Throwable {");
             writer.println("        " + ice.getMessageContent());
             writer.println("    }");
@@ -105,8 +125,9 @@ public class ExecPlugin implements Plugin {
         } else {
             try {
                 final Process process = Runtime.getRuntime().exec(
-                        new String[] { "java", "-classpath", "execPlugin/", "-Djava.security.manager",
-                                "-Djava.security.policy=execPlugin/exec.policy", "-Xmx64M", "Exec" });
+                        new String[] { "nice", "-n", "19", "java", "-classpath", "execPlugin/",
+                                "-Djava.security.manager", "-Djava.security.policy=execPlugin/exec.policy", "-Xmx64M",
+                                "Exec" });
                 new StreamReader(process.getInputStream(), output).start();
                 new StreamReader(process.getErrorStream(), output).start();
 
@@ -131,10 +152,9 @@ public class ExecPlugin implements Plugin {
         //int count = isAdminCmd ? 3 : 2;
         int count = 3;
         for (int i = 0; i < Math.min(count, output.size()); i++) {
-            ice.getSource().sendMessageTo(target, MessageTypes.PRIVMSG, output.get(i));
+            ice.getSource().sendMessageTo(target, MessageTypes.PRIVMSG, output.get(i).substring(0, Math.min(128, output.get(i).length())));
         }
     }
-
 
     class StreamReader extends Thread {
 
@@ -178,6 +198,9 @@ public class ExecPlugin implements Plugin {
             return new String[] { "Plugin that allows random code execution. See " + ice.getPrefix() + "exec" };
         } else if (message.equals("exec")) {
             return new String[] { "Compile and execute the given java code.",
+                    "Example: " + ice.getPrefix() + "exec System.out.println(3 + 5);" };
+        } else if (message.equals("execp")) {
+            return new String[] { "Compile and execute the given java code. Answer in private.",
                     "Example: " + ice.getPrefix() + "exec System.out.println(3 + 5);" };
         }
 
