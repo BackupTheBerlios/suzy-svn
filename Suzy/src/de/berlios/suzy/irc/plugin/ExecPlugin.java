@@ -154,6 +154,10 @@ public class ExecPlugin implements Plugin {
         for (int i = 0; i < Math.min(count, output.size()); i++) {
             ice.getSource().sendMessageTo(target, MessageTypes.PRIVMSG, output.get(i).substring(0, Math.min(128, output.get(i).length())));
         }
+        
+        if (output.size() == 0) {
+            ice.getSource().sendMessageTo(target, MessageTypes.PRIVMSG, "Execution successful. No output.");
+        }
     }
 
     class StreamReader extends Thread {
