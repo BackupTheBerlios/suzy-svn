@@ -1,0 +1,188 @@
+/*
+ * Copyright (C) yyyy  name of author
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ */
+
+package de.berlios.suzy.irc.plugin;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import de.berlios.suzy.irc.IrcCommandEvent;
+import de.berlios.suzy.irc.MessageTypes;
+import de.berlios.suzy.irc.Plugin;
+
+public class ExecPlugin implements Plugin {
+    private final static int DELAY = 1000;
+
+
+    public String[] getCommands() {
+        return new String[] { "exec" };
+    }
+
+    public String[] getRestrictedCommands() {
+        return new String[] { "execpub" };
+    }
+
+    public void handleEvent(IrcCommandEvent ice) {
+        if (ice.getCommand().equals("exec")) {
+            exec(ice, false);
+        } else if (ice.getCommand().equals("execpub")) {
+            exec(ice, true);
+        }
+    }
+
+    public ExecPlugin() {
+    }
+
+
+    private void exec(IrcCommandEvent ice, boolean isAdminCmd) {
+        StringWriter compilerOutput = new StringWriter();
+        String file = "execPlugin/Exec.java";
+
+        List<String> output = Collections.synchronizedList(new ArrayList<String>());
+        String target = isAdminCmd ? ice.getTarget().getDefaultTarget() : ice.getTarget().getUser();
+
+
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(file);
+            writer.println("import java.util.*;");
+            writer.println("import java.util.concurrent.*;");
+            writer.println("import java.util.regex.*;");
+            writer.println("import java.util.zip.*;");
+            writer.println("import java.math.*;");
+            writer.println("import java.text.*;");
+            writer.println("public class Exec {");
+            writer.println("    public static void main(String[] args) throws Throwable {");
+            writer.println("        " + ice.getMessageContent());
+            writer.println("    }");
+            writer.println("}");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            ice.getSource().sendMessageTo(target, MessageTypes.PRIVMSG, e.toString());
+
+            return;
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
+
+
+        int error = com.sun.tools.javac.Main.compile(new String[] { file }, new PrintWriter(compilerOutput));
+        if (error != 0) {
+
+            String[] compOut = compilerOutput.toString().split("[\n\r]+");
+            for (String out : compOut) {
+                output.add(out);
+            }
+        } else {
+            try {
+                final Process process = Runtime.getRuntime().exec(
+                        new String[] { "java", "-classpath", "execPlugin/", "-Djava.security.manager",
+                                "-Djava.security.policy=execPlugin/exec.policy", "-Xmx64M", "Exec" });
+                new StreamReader(process.getInputStream(), output).start();
+                new StreamReader(process.getErrorStream(), output).start();
+
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        process.destroy();
+                    }
+                }, DELAY);
+
+                process.waitFor();
+            } catch (IOException e) {
+                e.printStackTrace();
+                output.add("Error executing: " + e.toString());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                output.add("Error executing: " + e.toString());
+            }
+        }
+
+        //int count = isAdminCmd ? 3 : 2;
+        int count = 3;
+        for (int i = 0; i < Math.min(count, output.size()); i++) {
+            ice.getSource().sendMessageTo(target, MessageTypes.PRIVMSG, output.get(i));
+        }
+    }
+
+
+    class StreamReader extends Thread {
+
+        private InputStream stream;
+        private List<String> output;
+
+        public StreamReader(InputStream stream, List<String> output) {
+            this.stream = stream;
+            this.output = output;
+        }
+
+
+        @Override
+        public void run() {
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+            try {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    output.add(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    /* (non-Javadoc)
+     * @see de.berlios.suzy.irc.Plugin#getHelp(de.berlios.suzy.irc.IrcCommandEvent)
+     */
+    public String[] getHelp(IrcCommandEvent ice) {
+        String message = ice.getMessageContent();
+
+        if (message.equals("execplugin")) {
+            return new String[] { "Plugin that allows random code execution. See " + ice.getPrefix() + "exec" };
+        } else if (message.equals("exec")) {
+            return new String[] { "Compile and execute the given java code.",
+                    "Example: " + ice.getPrefix() + "exec System.out.println(3 + 5);" };
+        }
+
+
+        return null;
+    }
+
+}
