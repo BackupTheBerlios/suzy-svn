@@ -40,18 +40,22 @@ public class ExecPlugin implements Plugin {
 
 
     public String[] getCommands() {
-        return new String[] { "execp" };
+        return new String[] { "exec", "sysout" };
     }
 
     public String[] getRestrictedCommands() {
-        return new String[] { "exec" };
+        return new String[] {/* "exec"*/ };
     }
 
     public void handleEvent(IrcCommandEvent ice) {
-        if (ice.getCommand().equals("execp")) {
-            exec(ice, false);
-        } else if (ice.getCommand().equals("exec")) {
-            exec(ice, true);
+        /*if (ice.getCommand().equals("execp")) {
+            exec(ice, false, false);
+        } else */
+        
+        if (ice.getCommand().equals("exec")) {
+            exec(ice, true, false);
+        } else if (ice.getCommand().equals("sysout")) {
+            exec(ice, true, true);
         }
     }
 
@@ -59,12 +63,12 @@ public class ExecPlugin implements Plugin {
     }
 
 
-    private void exec(IrcCommandEvent ice, boolean isAdminCmd) {
+    private void exec(IrcCommandEvent ice, boolean isChanMessage, boolean isSysoutOnly) {
         StringWriter compilerOutput = new StringWriter();
         String file = "execPlugin/Exec.java";
 
         List<String> output = Collections.synchronizedList(new ArrayList<String>());
-        String target = isAdminCmd ? ice.getTarget().getDefaultTarget() : ice.getTarget().getUser();
+        String target = isChanMessage ? ice.getTarget().getDefaultTarget() : ice.getTarget().getUser();
 
 
         PrintWriter writer = null;
@@ -111,7 +115,7 @@ public class ExecPlugin implements Plugin {
             writer.println("        }");
             writer.println("    }");
             writer.println("    public static void main(String[] args) throws Throwable {");
-            writer.println("        " + ice.getMessageContent());
+            writer.println(!isSysoutOnly?"        " + ice.getMessageContent() : "        sysout(" + ice.getMessageContent()+"\n);");
             writer.println("    }");
             writer.println("}");
 
