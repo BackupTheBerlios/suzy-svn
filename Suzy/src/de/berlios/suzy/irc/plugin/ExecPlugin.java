@@ -81,6 +81,10 @@ public class ExecPlugin implements Plugin {
             writer.println("    public static void sysout(Object object) {");
             writer.println("        if (object instanceof Object[]) {");
             writer.println("            System.out.println(Arrays.deepToString((Object[])object));");
+            writer.println("        } else if (object instanceof byte[]) {");
+            writer.println("            System.out.println(Arrays.toString((byte[])object));");
+            writer.println("        } else if (object instanceof short[]) {");
+            writer.println("            System.out.println(Arrays.toString((short[])object));");
             writer.println("        } else if (object instanceof int[]) {");
             writer.println("            System.out.println(Arrays.toString((int[])object));");
             writer.println("        } else if (object instanceof long[]) {");
@@ -90,7 +94,16 @@ public class ExecPlugin implements Plugin {
             writer.println("        } else if (object instanceof double[]) {");
             writer.println("            System.out.println(Arrays.toString((double[])object));");
             writer.println("        } else if (object instanceof char[]) {");
-            writer.println("            System.out.println(Arrays.toString((char[])object));");
+            writer.println("            char[] chars = (char[])object;");
+            writer.println("            String[] out = new String[chars.length];");
+            writer.println("            for (int i=0;i<chars.length;i++) {");
+            writer.println("                if (Character.isISOControl(chars[i])) {");
+            writer.println("                    out[i] = \"\\\\\"+(int)chars[i];");
+            writer.println("                } else {");
+            writer.println("                    out[i] = Character.toString(chars[i]);");
+            writer.println("                }");
+            writer.println("            }");
+            writer.println("            System.out.println(Arrays.toString(out));");
             writer.println("        } else if (object instanceof boolean[]) {");
             writer.println("            System.out.println(Arrays.toString((boolean[])object));");
             writer.println("        } else {");
