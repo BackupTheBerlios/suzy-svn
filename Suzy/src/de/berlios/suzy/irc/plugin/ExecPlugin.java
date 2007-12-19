@@ -115,7 +115,7 @@ public class ExecPlugin implements Plugin {
             writer.println("        }");
             writer.println("    }");
             writer.println("    public static void main(String[] args) throws Throwable {");
-            writer.println(!isSysoutOnly?"        " + ice.getMessageContent() : "        sysout(" + ice.getMessageContent()+"\n);");
+            writer.println(!isSysoutOnly?ice.getMessageContent() : "sysout(" + ice.getMessageContent()+"\n);");
             writer.println("    }");
             writer.println("}");
 
@@ -141,10 +141,7 @@ public class ExecPlugin implements Plugin {
             }
         } else {
             try {
-                final Process process = Runtime.getRuntime().exec(
-                        new String[] { "nice", "-n", "19", "java", "-classpath", "execPlugin/",
-                                "-Djava.security.manager", "-Djava.security.policy=execPlugin/exec.policy", "-Xmx64M",
-                                "Exec" });
+                final Process process = Runtime.getRuntime().exec("/bin/sh execPlugin.sh");
                 new StreamReader(process.getInputStream(), output).start();
                 new StreamReader(process.getErrorStream(), output).start();
 
@@ -220,10 +217,13 @@ public class ExecPlugin implements Plugin {
         } else if (message.equals("exec")) {
             return new String[] { "Compile and execute the given java code.",
                     "Example: " + ice.getPrefix() + "exec System.out.println(3 + 5);" };
-        } else if (message.equals("execp")) {
+        } else if (message.equals("sysout")) {
+            return new String[] { "Compile and execute the given java code. Answer in private.",
+                    "Example: " + ice.getPrefix() + "sysout 3 + Math.random()" };
+        } /*else if (message.equals("execp")) {
             return new String[] { "Compile and execute the given java code. Answer in private.",
                     "Example: " + ice.getPrefix() + "exec System.out.println(3 + 5);" };
-        }
+        }*/
 
 
         return null;
